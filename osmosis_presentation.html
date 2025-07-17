@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<!-- saved from url=(0081)https://v0-cleaning-up-navigation-994tgx91d-andrews-projects-ffd5028b.vercel.app/ -->
+<html lang="en"><plasmo-csui id="ff-overlay-container"><template shadowrootmode="open"><style>#plasmo-shadow-container > div {
+  pointer-events: none !important;
+  background: none !important;
+  position: fixed !important;
+  inset: 0 !important;
+}
+
+.main_top_container_ff {
+  width: 400px;
+}
+
+.popup_container_wrapper_ff {
+  background-color: #fff;
+}
+
+.popup_container_wrapper_ff * {
+  font-family: PoppinsRegular;
+}
+
+.popup_container_wrapper_ff img {
+  background-color: #0000;
+}
+
+.popup_container_ff {
+  box-shadow: 0 5px 20px #1e1e2212;
+}
+
+.popup_div_ff {
+  box-sizing: border-box;
+  background-color: #fff;
+  width: 100%;
+  padding: 24px;
+}
+
+.main_component_ff {
+  width: 100%;
+  padding-bottom: 0 !important;
+}
+
+.popup_top_icon_div_ff {
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  display: flex;
+}
+
+.popup_top_icon_div_ff .btn_canvas_ff {
+  display: inline-flex;
+}
+
+.popup_top_icon_div_ff .ff_popup_top_image {
+  z-index: 0;
+  width: 100%;
+  height: auto;
+  position: absolute;
+  inset: 0 0 auto;
+}
+
+.popup_top_icon_btn_ff {
+  cursor: pointer;
+  z-index: 1;
+  background: none;
+  border: none;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 20px;
+  display: inline-flex;
+}
+
+.popup_top_icon_btn_ff img {
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.popup_top_icon_btn_ff:focus {
+  outline: none;
+}
+
+.dot_ff {
+  background-color: red;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+}
+
+.dot_ff-top-right {
+  position: absolute;
+  top: 33%;
+  right: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot_ff {
+    animation: none;
+  }
+}
+
+.topbar_cross_icon_ff {
+  cursor: pointer;
+  background: #eaeaea;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: flex;
+}
+
+.topbar_cross_icon_ff img {
+  width: 12px;
+  height: 12px;
+}
+
+.btn_canvas_ff .topbar_detail_submit_btn_ff {
+  cursor: pointer;
+  color: #6e75ff;
+  background: #f0f0ff;
+  border: none;
+  border-radius: 5px;
+  justify-content: center;
+  align-items: center;
+  min-width: 108px;
+  min-height: 40px;
+  margin: 0;
+  padding: 10px 30px;
+  font-family: PoppinsRegular;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  display: flex;
+}
+
+.btn_canvas_ff .topbar_detail_submit_btn_ff:hover {
+  box-shadow: none;
+  color: #fff;
+  cursor: pointer;
+  background: #6e75ff;
+  border: none;
+  outline: none;
+}
+
+.btn_canvas_ff .topbar_detail_okay_btn_ff {
+  cursor: pointer;
+  color: #555;
+  background: #eee;
+  border: none;
+  border-radius: 5px;
+  justify-content: center;
+  align-items: center;
+  min-width: 108px;
+  min-height: 40px;
+  margin: 0;
+  padding: 10px 30px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  display: flex;
+}
+
+.btn_canvas_ff .topbar_detail_okay_btn_ff:hover, .btn_canvas_ff .topbar_detail_okay_btn_ff:focus {
+  box-shadow: none;
+  color: #eee;
+  cursor: pointer;
+  background: #555;
+  border: none;
+  outline: none;
+}
+
+.btn_canvas_ff .topbar_detail_submit_btn_ff:disabled, .btn_canvas_ff .topbar_detail_okay_btn_ff:disabled {
+  color: #696969 !important;
+  background-color: #d3d3d3 !important;
+}
+
+.spaced_icon_ff {
+  margin-left: 5px;
+  background-color: #0000 !important;
+}
+
+.toggle_btn_ff {
+  justify-content: center;
+  align-items: center;
+  padding: 6px 0 18px;
+  display: flex;
+  position: relative;
+}
+
+.create_notification_container_ff {
+  cursor: auto;
+  box-sizing: border-box;
+  z-index: 99999;
+  pointer-events: initial;
+  background-color: #fff;
+  border: none;
+  border-radius: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 512px;
+  margin-top: 16px;
+  padding: 24px;
+  position: absolute;
+  inset: 20px 100px auto auto;
+  box-shadow: 0 0 10px;
+}
+
+plasmo-csui#ff-overlay-container, plasmo-csui#real-time-panel {
+  z-index: 999;
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+}
+
+.ff_input_container {
+  background: none;
+  border: none;
+  border-radius: 4px;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: -webkit-fill-available;
+  display: flex;
+}
+
+.ff_input_container .input_input {
+  resize: none;
+  background: none;
+  border: 1px solid #f2f4f7;
+  border-radius: 8px;
+  width: -webkit-fill-available;
+  height: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+  box-shadow: none !important;
+  color: #475467 !important;
+  padding: 8px 16px !important;
+  font-family: Roboto !important;
+  font-size: 14px !important;
+}
+
+.ff_input_container .input_input:focus-visible {
+  outline: none;
+}
+
+.ff_input_container .input_label {
+  letter-spacing: -.01em;
+  color: #101828;
+  background-color: #0000;
+  padding-bottom: 8px;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.ff_input_container .input_description {
+  letter-spacing: -.01em;
+  color: #878f97;
+  background-color: #0000;
+  margin: 0;
+  padding-bottom: 8px;
+  font-family: Roboto;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.input_icon_container {
+  border: 1px solid #f2f4f7;
+  border-radius: 8px;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  width: -webkit-fill-available;
+  padding-left: 16px;
+  display: flex;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.input_icon_container .input_input {
+  border: none;
+  padding-left: 0 !important;
+}
+
+.ff_select_container {
+  background: none;
+  border: none;
+  border-radius: 4px;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: -webkit-fill-available;
+  display: flex;
+  position: relative;
+}
+
+.ff_select_option_list_container {
+  z-index: 1;
+  background: #fff;
+  border: 1px solid #f2f4f7;
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+  width: -webkit-fill-available;
+  max-height: 80px;
+  margin: 0;
+  padding: 10px;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  overflow-y: scroll;
+}
+
+.ff_select_option_list {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: hidden;
+}
+
+.ff_select_option_item {
+  color: #475467;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  align-self: stretch;
+  align-items: center;
+  gap: 8px;
+  min-height: 16px;
+  padding: 8px;
+  display: flex;
+  overflow: hidden;
+}
+
+.ff_select_option_item:hover, .ff_select_option_item:focus {
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.ff_select_option_item span {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: none;
+  overflow: hidden;
+}
+
+.ff_select_search {
+  border-bottom-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.ff_select_dropdown_container {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 55px;
+  display: flex;
+  position: relative;
+}
+
+.topbar_heading_box_ff {
+  flex-direction: row;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.topbar_icon_ff {
+  justify-content: center;
+  align-items: center;
+  margin-right: 10px;
+  display: flex;
+}
+
+.topbar_middle_icon_ff {
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 1rem;
+  display: flex;
+}
+
+.topbar_detail_head_ff {
+  text-align: left;
+  letter-spacing: -.01em;
+  color: #22262a;
+  border: none;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: PoppinsRegular;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  font-family: PoppinsMedium !important;
+}
+
+.topbar_detail_body_ff {
+  letter-spacing: 0;
+  align-items: flex-start;
+  margin: 16px 0 17px;
+  padding: 0;
+  display: flex;
+}
+
+.topbar_detail_para_ff {
+  width: 100%;
+  margin: 0;
+}
+
+.topbar_detail_para_ff .topbar_detail_text {
+  color: #484f56;
+  letter-spacing: -.01em;
+  margin: 0;
+  padding: 0;
+  font-family: PoppinsRegular;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+}
+
+.topbar_detail_para_ff .topbar_detail_text_last {
+  color: #878f97;
+  letter-spacing: -.01em;
+  margin: 0;
+  padding-top: 8px;
+  padding-bottom: 2px;
+  font-family: PoppinsRegular;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.topbar_detail_static_arrow_ff {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}
+
+.topbar_detail_static_arrow_ff img {
+  width: 24px;
+  height: 26px;
+  display: inline;
+}
+
+.topbar_detail_btns_ff {
+  justify-content: space-between;
+  width: 100%;
+  display: flex;
+}
+
+.narrow_btns_ff {
+  width: 70% !important;
+}
+
+.review_btns_ff {
+  gap: 1rem;
+  justify-content: flex-start !important;
+  width: 70% !important;
+}
+
+.topbar_detail_submit_btn_ff, .topbar_detail_okay_btn_ff {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  overflow: hidden;
+}
+
+.dot_ff {
+  border-radius: 50%;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 8px;
+  height: 8px;
+  display: flex;
+}
+
+.success_dot_ff {
+  background-color: #12b76a !important;
+}
+
+.warning_dot_ff {
+  background-color: #f08c00 !important;
+}
+
+.error_dot_ff {
+  background-color: red !important;
+}
+
+.large_dot_ff {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.medium_dot_ff {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+.small_dot_ff {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+</style><div id="plasmo-shadow-container" style="z-index: 2147483647; position: relative;"><div id="plasmo-overlay-0" class="plasmo-csui-container" style="display: flex; position: absolute; top: 0px; left: 0px;"></div></div></template></plasmo-csui><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="preload" href="https://v0-cleaning-up-navigation-994tgx91d-andrews-projects-ffd5028b.vercel.app/_next/static/media/26d4368bf94c0ec4-s.p.woff2" as="font" crossorigin="" type="font/woff2"><link rel="preload" href="https://v0-cleaning-up-navigation-994tgx91d-andrews-projects-ffd5028b.vercel.app/_next/static/media/8936b6d02fa555ef-s.p.woff2" as="font" crossorigin="" type="font/woff2"><link rel="preload" href="https://v0-cleaning-up-navigation-994tgx91d-andrews-projects-ffd5028b.vercel.app/_next/static/media/9566c4bc819b17de-s.p.woff2" as="font" crossorigin="" type="font/woff2"><link rel="preload" href="https://v0-cleaning-up-navigation-994tgx91d-andrews-projects-ffd5028b.vercel.app/_next/static/media/b11c0a0df6cb7c16-s.p.woff2" as="font" crossorigin="" type="font/woff2"><link rel="preload" href="https://v0-cleaning-up-navigation-994tgx91d-andrews-projects-ffd5028b.vercel.app/_next/static/media/cf6043f6f9e378b1-s.p.woff2" as="font" crossorigin="" type="font/woff2"><link rel="preload" as="image" href="./Osmosis - Presentation_files/osmosis-logo.svg"><link rel="stylesheet" href="./Osmosis - Presentation_files/16e9c286054bf7e5.css" data-precedence="next"><link rel="preload" as="script" fetchpriority="low" href="./Osmosis - Presentation_files/webpack-bf8af1ca19025687.js"><script src="./Osmosis - Presentation_files/4bd1b696-29d6015316d35520.js" async=""></script><script src="./Osmosis - Presentation_files/684-1faf9b6228726857.js" async=""></script><script src="./Osmosis - Presentation_files/main-app-c9779a9cf3f89b5e.js" async=""></script><script src="./Osmosis - Presentation_files/page-00c62df469e7645f.js" async=""></script><meta name="next-size-adjust" content=""><title>Osmosis - Expansion Surface</title><meta name="description" content="Six Adjacent Use Cases Within Existing Logos"><meta name="generator" content="v0.dev"><script src="./Osmosis - Presentation_files/polyfills-42372ed130431b0a.js" nomodule=""></script><style>@font-face { font-family: DMSans; src: url('chrome-extension://meimoidfecamngeoanhnpdjjdcefoldn/assets/fonts/DMSans-Regular.ttf'); }@font-face { font-family: PoppinsMedium; src: url('chrome-extension://meimoidfecamngeoanhnpdjjdcefoldn/assets/fonts/Poppins-Medium.otf'); }@font-face { font-family: PoppinsRegular; src: url('chrome-extension://meimoidfecamngeoanhnpdjjdcefoldn/assets/fonts/Poppins-Regular.otf'); }@font-face { font-family: Roboto; src: url('chrome-extension://meimoidfecamngeoanhnpdjjdcefoldn/assets/fonts/Roboto-Regular.ttf'); }@font-face { font-family: Inter; src: url('chrome-extension://meimoidfecamngeoanhnpdjjdcefoldn/assets/fonts/Inter-Regular.ttf'); }</style></head><body class="__variable_c8daab __variable_8f9a57 font-sans antialiased"><div class="min-h-screen bg-[#eae7e0] overflow-hidden py-4"><div class="w-full flex items-start justify-center px-8"><div class="w-full max-w-7xl bg-[#f4f3ef] rounded-3xl shadow-2xl border border-gray-200 relative overflow-hidden min-h-[95vh]"><div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#f8613c] via-[#2A60F8] to-[#f8613c]"></div><div class="absolute top-4 left-4 z-20"><img src="https://osmosis.fm/img/Osmosis-logo.959e70eb.svg" alt="Osmosis" class="h-8"></div><div class="px-16 pt-16 pb-16 max-h-[calc(95vh-32px)] overflow-y-auto"><div class="flex flex-col items-center justify-center h-full text-center space-y-12"><div class="space-y-4"><h1 class="text-6xl font-condensed font-normal text-[#0a0a0a] mb-6">Expansion Surface</h1><h2 class="text-3xl font-condensed font-normal text-[#0a0a0a]">Six Adjacent Use Cases Within Existing Logos</h2></div><div class="grid grid-cols-3 gap-10 w-full max-w-5xl"><div class="bg-[#f4f3ef] border-2 border-gray-200 rounded-2xl p-6 text-center transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-xl hover:border-[#2A60F8] cursor-pointer"><div class="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-2xl bg-gradient-to-br from-[#2A60F8] to-[#f8613c]">🎯</div><h3 class="text-lg font-condensed font-semibold text-[#0a0a0a] mb-3">Competitor Intelligence</h3><p class="text-sm font-sans text-[#0a0a0a] leading-relaxed">Monitor rival fund positioning &amp; performance</p></div><div class="bg-[#f4f3ef] border-2 border-gray-200 rounded-2xl p-6 text-center transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-xl hover:border-[#2A60F8] cursor-pointer"><div class="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-2xl bg-gradient-to-br from-[#f8613c] to-[#2A60F8]">⚖️</div><h3 class="text-lg font-condensed font-semibold text-[#0a0a0a] mb-3">Regulatory Monitoring</h3><p class="text-sm font-sans text-[#0a0a0a] leading-relaxed">Real-time policy &amp; compliance alerts</p></div><div class="bg-[#f4f3ef] border-2 border-gray-200 rounded-2xl p-6 text-center transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-xl hover:border-[#2A60F8] cursor-pointer"><div class="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-2xl bg-gradient-to-br from-[#0a0a0a] to-[#2A60F8]">💳</div><h3 class="text-lg font-condensed font-semibold text-[#0a0a0a] mb-3">Private Credit Intelligence</h3><p class="text-sm font-sans text-[#0a0a0a] leading-relaxed">Early borrower &amp; deal signals</p></div><div class="bg-[#f4f3ef] border-2 border-gray-200 rounded-2xl p-6 text-center transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-xl hover:border-[#2A60F8] cursor-pointer"><div class="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-2xl bg-gradient-to-br from-[#2A60F8] to-[#0a0a0a]">🏛️</div><h3 class="text-lg font-condensed font-semibold text-[#0a0a0a] mb-3">Muni &amp; Infrastructure</h3><p class="text-sm font-sans text-[#0a0a0a] leading-relaxed">Pre-issuance municipal signals</p></div><div class="bg-[#f4f3ef] border-2 border-gray-200 rounded-2xl p-6 text-center transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-xl hover:border-[#2A60F8] cursor-pointer"><div class="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-2xl bg-gradient-to-br from-[#f8613c] to-[#0a0a0a]">📈</div><h3 class="text-lg font-condensed font-semibold text-[#0a0a0a] mb-3">Public Equity Mining</h3><p class="text-sm font-sans text-[#0a0a0a] leading-relaxed">Off-script earnings &amp; conference remarks</p></div><div class="bg-[#f4f3ef] border-2 border-gray-200 rounded-2xl p-6 text-center transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-xl hover:border-[#2A60F8] cursor-pointer"><div class="w-14 h-14 rounded-xl mx-auto mb-4 flex items-center justify-center text-2xl bg-gradient-to-br from-[#2A60F8] to-[#0a0a0a]">🎓</div><h3 class="text-lg font-condensed font-semibold text-[#0a0a0a] mb-3">Academic Innovation</h3><p class="text-sm font-sans text-[#0a0a0a] leading-relaxed">Early breakthrough detection in universities</p></div></div><div class="bg-gradient-to-br from-[#2A60F8] to-[#f8613c] text-white p-8 rounded-3xl text-center"><h3 class="text-2xl font-condensed font-normal mb-3">Asset Manager TAM</h3><div class="text-5xl font-condensed font-bold">$13B</div></div></div></div></div></div><div class="fixed bottom-8 left-8 flex gap-3 z-50"><button class="bg-white/90 backdrop-blur-sm border border-gray-200 px-5 py-3 rounded-full font-sans font-semibold transition-all duration-200 hover:bg-white hover:transform hover:-translate-y-1 hover:shadow-lg flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left w-4 h-4"><path d="m15 18-6-6 6-6"></path></svg>Previous</button><button class="bg-white/90 backdrop-blur-sm border border-gray-200 px-5 py-3 rounded-full font-sans font-semibold transition-all duration-200 hover:bg-white hover:transform hover:-translate-y-1 hover:shadow-lg flex items-center gap-2">Next<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right w-4 h-4"><path d="m9 18 6-6-6-6"></path></svg></button></div></div><div><div id="v0-built-with-button-0f8c0d3f-22a5-4429-8145-d19646a5304c" style="
+border: 1px solid hsl(0deg 0% 100% / 12%);
+position: fixed;
+bottom: 24px;
+right: 24px;
+z-index: 1000;
+background: #121212;
+color: white;
+padding: 8px 12px;
+border-radius: 8px;
+font-weight: 400;
+font-size: 14px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+letter-spacing: 0.02em;
+transition: all 0.2s;
+display: flex;
+align-items: center;
+gap: 4px;
+font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, sans-serif;
+">
+<a href="https://v0.dev/chat/api/open/built-with-v0/b_i7rXX6Pfxeo" target="_blank" rel="noopener noreferrer" style="
+    color: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  ">
+  Built with
+  <svg fill="currentColor" viewBox="0 0 40 20" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;">
+    <path d="M23.3919 0H32.9188C36.7819 0 39.9136 3.13165 39.9136 6.99475V16.0805H36.0006V6.99475C36.0006 6.90167 35.9969 6.80925 35.9898 6.71766L26.4628 16.079C26.4949 16.08 26.5272 16.0805 26.5595 16.0805H36.0006V19.7762H26.5595C22.6964 19.7762 19.4788 16.6139 19.4788 12.7508V3.68923H23.3919V12.7508C23.3919 12.9253 23.4054 13.0977 23.4316 13.2668L33.1682 3.6995C33.0861 3.6927 33.003 3.68923 32.9188 3.68923H23.3919V0Z"></path>
+    <path d="M13.7688 19.0956L0 3.68759H5.53933L13.6231 12.7337V3.68759H17.7535V17.5746C17.7535 19.6705 15.1654 20.6584 13.7688 19.0956Z"></path>
+  </svg>
+</a>
+
+<button onclick="document.getElementById(&#39;v0-built-with-button-0f8c0d3f-22a5-4429-8145-d19646a5304c&#39;).style.display=&#39;none&#39;" onmouseenter="this.style.opacity=&#39;1&#39;" onmouseleave="this.style.opacity=&#39;0.7&#39;" style="
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 2px;
+    margin-left: 4px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    transform: translateZ(0);
+  " aria-label="Close">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+  </svg>
+</button>
+
+<span style="
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+">
+  v0
+</span>
+</div></div><script src="./Osmosis - Presentation_files/webpack-bf8af1ca19025687.js" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,"1:\"$Sreact.fragment\"\n2:I[7555,[],\"\"]\n3:I[1295,[],\"\"]\n5:I[894,[],\"ClientPageRoot\"]\n6:I[8256,[\"974\",\"static/chunks/app/page-00c62df469e7645f.js\"],\"default\"]\n9:I[9665,[],\"OutletBoundary\"]\nc:I[9665,[],\"ViewportBoundary\"]\ne:I[9665,[],\"MetadataBoundary\"]\n10:I[6614,[],\"\"]\n:HL[\"/_next/static/media/26d4368bf94c0ec4-s.p.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/_next/static/media/8936b6d02fa555ef-s.p.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/_next/static/media/9566c4bc819b17de-s.p.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/_next/static/media/b11c0a0df6cb7c16-s.p.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/_next/static/media/cf6043f6f9e378b1-s.p.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/_next/static/css/16e9c286054bf7e5.css\",\"style\"]\n4:T945,"])</script><script>self.__next_f.push([1,"\u003cdiv id=\"v0-built-with-button-0f8c0d3f-22a5-4429-8145-d19646a5304c\" style=\"\nborder: 1px solid hsl(0deg 0% 100% / 12%);\nposition: fixed;\nbottom: 24px;\nright: 24px;\nz-index: 1000;\nbackground: #121212;\ncolor: white;\npadding: 8px 12px;\nborder-radius: 8px;\nfont-weight: 400;\nfont-size: 14px;\nbox-shadow: 0 2px 8px rgba(0,0,0,0.12);\nletter-spacing: 0.02em;\ntransition: all 0.2s;\ndisplay: flex;\nalign-items: center;\ngap: 4px;\nfont-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n\"\u003e\n\u003ca\n  href=\"https://v0.dev/chat/api/open/built-with-v0/b_i7rXX6Pfxeo\"\n  target=\"_blank\"\n  rel=\"noopener noreferrer\"\n  style=\"\n    color: inherit;\n    text-decoration: none;\n    display: flex;\n    align-items: center;\n    gap: 4px;\n  \"\n\u003e\n  Built with\n  \u003csvg\n    fill=\"currentColor\"\n    viewBox=\"0 0 40 20\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n    style=\"width: 20px; height: 20px;\"\n  \u003e\n    \u003cpath d=\"M23.3919 0H32.9188C36.7819 0 39.9136 3.13165 39.9136 6.99475V16.0805H36.0006V6.99475C36.0006 6.90167 35.9969 6.80925 35.9898 6.71766L26.4628 16.079C26.4949 16.08 26.5272 16.0805 26.5595 16.0805H36.0006V19.7762H26.5595C22.6964 19.7762 19.4788 16.6139 19.4788 12.7508V3.68923H23.3919V12.7508C23.3919 12.9253 23.4054 13.0977 23.4316 13.2668L33.1682 3.6995C33.0861 3.6927 33.003 3.68923 32.9188 3.68923H23.3919V0Z\" /\u003e\n    \u003cpath d=\"M13.7688 19.0956L0 3.68759H5.53933L13.6231 12.7337V3.68759H17.7535V17.5746C17.7535 19.6705 15.1654 20.6584 13.7688 19.0956Z\" /\u003e\n  \u003c/svg\u003e\n\u003c/a\u003e\n\n\u003cbutton\n  onclick=\"document.getElementById('v0-built-with-button-0f8c0d3f-22a5-4429-8145-d19646a5304c').style.display='none'\"\n  onmouseenter=\"this.style.opacity='1'\"\n  onmouseleave=\"this.style.opacity='0.7'\"\n  style=\"\n    background: none;\n    border: none;\n    color: white;\n    cursor: pointer;\n    padding: 2px;\n    margin-left: 4px;\n    border-radius: 2px;\n    display: flex;\n    align-items: center;\n    opacity: 0.7;\n    transition: opacity 0.2s;\n    transform: translateZ(0);\n  \"\n  aria-label=\"Close\"\n\u003e\n  \u003csvg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\n    \u003cpath d=\"M18 6L6 18M6 6l12 12\"/\u003e\n  \u003c/svg\u003e\n\u003c/button\u003e\n\n\u003cspan style=\"\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n\"\u003e\n  v0\n\u003c/span\u003e\n\u003c/div\u003e"])</script><script>self.__next_f.push([1,"0:{\"P\":null,\"b\":\"F95ucU_JO3xGCt13VzGHt\",\"p\":\"\",\"c\":[\"\",\"\"],\"i\":false,\"f\":[[[\"\",{\"children\":[\"__PAGE__\",{}]},\"$undefined\",\"$undefined\",true],[\"\",[\"$\",\"$1\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/16e9c286054bf7e5.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}]],[\"$\",\"html\",null,{\"lang\":\"en\",\"children\":[\"$\",\"body\",null,{\"className\":\"__variable_c8daab __variable_8f9a57 font-sans antialiased\",\"children\":[[\"$\",\"$L2\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L3\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[[\"$\",\"title\",null,{\"children\":\"404: This page could not be found.\"}],[\"$\",\"div\",null,{\"style\":{\"fontFamily\":\"system-ui,\\\"Segoe UI\\\",Roboto,Helvetica,Arial,sans-serif,\\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\"\",\"height\":\"100vh\",\"textAlign\":\"center\",\"display\":\"flex\",\"flexDirection\":\"column\",\"alignItems\":\"center\",\"justifyContent\":\"center\"},\"children\":[\"$\",\"div\",null,{\"children\":[[\"$\",\"style\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\"}}],[\"$\",\"h1\",null,{\"className\":\"next-error-h1\",\"style\":{\"display\":\"inline-block\",\"margin\":\"0 20px 0 0\",\"padding\":\"0 23px 0 0\",\"fontSize\":24,\"fontWeight\":500,\"verticalAlign\":\"top\",\"lineHeight\":\"49px\"},\"children\":404}],[\"$\",\"div\",null,{\"style\":{\"display\":\"inline-block\"},\"children\":[\"$\",\"h2\",null,{\"style\":{\"fontSize\":14,\"fontWeight\":400,\"lineHeight\":\"49px\",\"margin\":0},\"children\":\"This page could not be found.\"}]}]]}]}]],[]],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}],[\"$\",\"div\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"$4\"}}]]}]}]]}],{\"children\":[\"__PAGE__\",[\"$\",\"$1\",\"c\",{\"children\":[[\"$\",\"$L5\",null,{\"Component\":\"$6\",\"searchParams\":{},\"params\":{},\"promises\":[\"$@7\",\"$@8\"]}],\"$undefined\",null,[\"$\",\"$L9\",null,{\"children\":[\"$La\",\"$Lb\",null]}]]}],{},null,false]},null,false],[\"$\",\"$1\",\"h\",{\"children\":[null,[\"$\",\"$1\",\"08lDahYXAjrVLhfKhfemr\",{\"children\":[[\"$\",\"$Lc\",null,{\"children\":\"$Ld\"}],[\"$\",\"meta\",null,{\"name\":\"next-size-adjust\",\"content\":\"\"}]]}],[\"$\",\"$Le\",null,{\"children\":\"$Lf\"}]]}],false]],\"m\":\"$undefined\",\"G\":[\"$10\",\"$undefined\"],\"s\":false,\"S\":true}\n"])</script><script>self.__next_f.push([1,"7:{}\n8:{}\n"])</script><script>self.__next_f.push([1,"d:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}]]\na:null\n"])</script><script>self.__next_f.push([1,"b:null\nf:[[\"$\",\"title\",\"0\",{\"children\":\"Osmosis - Expansion Surface\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"Six Adjacent Use Cases Within Existing Logos\"}],[\"$\",\"meta\",\"2\",{\"name\":\"generator\",\"content\":\"v0.dev\"}]]\n"])</script><next-route-announcer style="position: absolute;"><template shadowrootmode="open"><div aria-live="assertive" id="__next-route-announcer__" role="alert" style="position: absolute; border: 0px; height: 1px; margin: -1px; padding: 0px; width: 1px; clip: rect(0px, 0px, 0px, 0px); overflow: hidden; white-space: nowrap; overflow-wrap: normal;"></div></template></next-route-announcer></body></html>
