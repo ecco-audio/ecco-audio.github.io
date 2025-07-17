@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allocator Data Richness</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .slide {
+            background: white;
+            width: 90vw;
+            max-width: 1200px;
+            height: 80vh;
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+        }
+
+        .slide-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .slide-title {
+            font-size: 3.5em;
+            font-weight: 300;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+        }
+
+        .slide-subtitle {
+            font-size: 1.3em;
+            color: #7f8c8d;
+            font-weight: 400;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            flex: 1;
+            align-items: center;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .metric-number {
+            font-size: 4em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            line-height: 0.9;
+        }
+
+        .metric-label {
+            font-size: 1.2em;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .metric-detail {
+            font-size: 0.95em;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+
+        .highlight-section {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 40px;
+            border-left: 5px solid #667eea;
+        }
+
+        .highlight-title {
+            font-size: 1.4em;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .highlight-text {
+            font-size: 1.1em;
+            color: #495057;
+            line-height: 1.5;
+        }
+
+        .roi-emphasis {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+
+        .slide-navigation {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #bdc3c7;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot.active {
+            background: #667eea;
+            transform: scale(1.2);
+        }
+
+        .slide.slide-2 {
+            display: none;
+        }
+
+        .slide.slide-2.active {
+            display: flex;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .insight-item {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .insight-item:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+        }
+
+        .insight-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+
+        .insight-label {
+            font-size: 1em;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .update-footer {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9em;
+            color: white;
+            font-style: italic;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 1024px) {
+            .slide {
+                padding: 40px;
+                width: 95vw;
+                height: 85vh;
+            }
+            
+            .slide-title {
+                font-size: 2.5em;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .insights-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1 -->
+        <div class="slide slide-1 active" id="slide1">
+            <div class="slide-header">
+                <h1 class="slide-title">Allocator Data Richness</h1>
+                <p class="slide-subtitle">Comprehensive Intelligence at Scale</p>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-number">4K</div>
+                    <div class="metric-label">Active Meetings</div>
+                    <div class="metric-detail">Picked up by crawler across 360 public plan allocators</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-number">525+</div>
+                    <div class="metric-label">Events Processed</div>
+                    <div class="metric-detail">Since January 1st, 2025</div>
+                </div>
+            </div>
+            
+            <div class="highlight-section">
+                <div class="highlight-title">ROI Justification: <span class="roi-emphasis">Proven Value</span></div>
+                <div class="highlight-text">
+                    With 160 opportunities actively clearing our pipeline and <b>1,767</b> third-party interactions identified, 
+                    the data richness directly supports competitive intelligence and sales optimization.
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="slide slide-2" id="slide2">
+            <div class="slide-header">
+                <h1 class="slide-title">Deep Intelligence Layer</h1>
+                <p class="slide-subtitle">Comprehensive Analysis Results</p>
+            </div>
+            
+            <div class="insights-grid">
+                <div class="insight-item">
+                    <div class="insight-number">353</div>
+                    <div class="insight-label">Presentations Identified</div>
+                </div>
+                
+                <div class="insight-item">
+                    <div class="insight-number">336</div>
+                    <div class="insight-label">Unique Organizations</div>
+                </div>
+                
+                <div class="insight-item">
+                    <div class="insight-number">20%</div>
+                    <div class="insight-label">Presentation Rate</div>
+                </div>
+            </div>
+            
+            <div class="highlight-section">
+                <div class="highlight-title">This is <span class="roi-emphasis">Conservative</span></div>
+                <div class="highlight-text">
+                    Based on our current feature set, these numbers are undercounting. 
+                    The actual data richness exceeds these already substantial metrics, providing even greater 
+                    ROI potential for competitive intelligence and "funds like me" insights.
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="slide-navigation">
+            <div class="nav-dot active" onclick="showSlide(1)"></div>
+            <div class="nav-dot" onclick="showSlide(2)"></div>
+        </div>
+        
+        <div class="update-footer">Updated - July 25</div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        
+        function showSlide(slideNumber) {
+            // Hide all slides
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            // Remove active state from all dots
+            document.querySelectorAll('.nav-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            
+            // Show selected slide
+            document.getElementById(`slide${slideNumber}`).classList.add('active');
+            
+            // Activate corresponding dot
+            document.querySelectorAll('.nav-dot')[slideNumber - 1].classList.add('active');
+            
+            currentSlide = slideNumber;
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' && currentSlide < 2) {
+                showSlide(currentSlide + 1);
+            } else if (event.key === 'ArrowLeft' && currentSlide > 1) {
+                showSlide(currentSlide - 1);
+            }
+        });
+        
+    </script>
+</body>
+</html>
