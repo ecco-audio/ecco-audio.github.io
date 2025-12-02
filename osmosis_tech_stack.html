@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Osmosis Tech Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f0e8;
+            color: #1a1a1a;
+            overflow: hidden;
+        }
+        
+        .slideshow-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        
+        .slide {
+            display: none;
+            padding: 20px;
+            height: auto;
+            position: relative;
+            background: #f5f0e8;
+        }
+        
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        
+        .tech-badge {
+            background: white;
+            color: #ff6b6b;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 2px solid #ff6b6b;
+        }
+        
+        .slide-number {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        h2 {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #2563eb;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            flex-grow: 1;
+        }
+        
+        .content-full {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .stack-visual {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .stack-layer {
+            width: 400px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 20px;
+            transform: perspective(400px) rotateX(20deg);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .layer-blue-dark { background: #1e40af; }
+        .layer-blue { background: #3b82f6; }
+        .layer-blue-light { background: #60a5fa; }
+        .layer-orange { background: #fb923c; }
+        .layer-orange-light { background: #fdba74; }
+        
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .flow-step {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .flow-step h3 {
+            color: #3b82f6;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .tech-item {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .architecture-diagram {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 40px;
+        }
+        
+        .arch-component {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .arch-component h4 {
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            position: fixed; /* fixed position on mobile */
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(245, 240, 232, 0.95); /* semi-transparent background */
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        .data-flow-visual {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 40px 0;
+        }
+        
+        .flow-node {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            flex: 1;
+            margin: 0 10px;
+        }
+        
+        .flow-arrow {
+            width: 40px;
+            height: 2px;
+            background: #3b82f6;
+            position: relative;
+        }
+        
+        .flow-arrow::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: -4px;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #3b82f6;
+            border-right: 2px solid #3b82f6;
+            transform: rotate(45deg);
+        }
+        
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Responsive Design for mobile devices */
+        @media (max-width: 768px) {
+            body {
+                overflow: auto; /* allow scrolling */
+            }
+            .slide {
+                padding: 20px; /* reduce padding */
+            }
+            h1 {
+                font-size: 32px; /* smaller headings */
+            }
+            h2 {
+                font-size: 24px;
+            }
+            .content-grid {
+                grid-template-columns: 1fr; /* single column */
+                gap: 20px;
+            }
+            .content-full {
+                gap: 20px;
+            }
+            .stack-layer {
+                width: 100%;
+                height: 60px;
+                font-size: 16px;
+            }
+            .architecture-diagram {
+                grid-template-columns: 1fr; /* single column diagram */
+            }
+            .data-flow-visual {
+                flex-direction: column; /* stack vertically */
+            }
+            .controls {
+                position: static; /* move controls into normal flow */
+                margin: 20px auto;
+            }
+            button {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+        }
+
+        /* Hide page number on first slide */
+        .slide:first-child .slide-number {
+            display: none;
+        }
+
+        /* Mobile warning message */
+        .mobile-warning {
+            /* Hidden by default */
+            display: none;
+            /* Fun gradient background */
+            background: linear-gradient(135deg, #fef3c7, #fee2e2);
+            padding: 60px 20px;
+            text-align: center;
+            font-size: 18px;
+            color: #1a1a1a;
+            height: 100vh;
+            width: 100%;
+            box-sizing: border-box;
+            /* Center content (applied when visible) */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-warning {
+                display: flex;
+            }
+            .slideshow-container,
+            .controls {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-warning">
+        <div style="font-size:64px;">📱</div>
+        <h2 style="margin-top: 20px;">Oops! Screen too small</h2>
+        <p style="margin-top: 10px;">This deck flexes best on a bigger display.<br/>Grab a tablet or laptop and we'll save your seat! 🚀</p>
+    </div>
+    <div class="slideshow-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="tech-badge">Osmosis Tech Stack</div>
+                <div class="slide-number">1 / 10</div>
+                <div style="color: #666; font-size: 14px;">Published: 7/3/25</div>
+            </div>
+            <div class="content-grid">
+                <div>
+                    <h1>We grab the signal before it vanishes.</h1>
+                    <p style="font-size: 36px; margin-top: 20px;">Real-time search for the unindexed web, verifiable and traceable to the source.</p>
+                    <p style="margin-top: 40px; color: #666;">While legacy vendors index what's already public, Osmosis captures what's about to disappear—and delivers it while you can still act on it.</p>
+                </div>
+                <div class="stack-visual">
+                    <div class="stack-layer layer-blue-dark">Identify</div>
+                    <div class="stack-layer layer-blue">Capture</div>
+                    <div class="stack-layer layer-blue-light">Understand</div>
+                    <div class="stack-layer layer-orange">Alert</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Full Stack Overview -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="tech-badge">Osmosis Tech Stack</div>
+                <div class="slide-number">2 / 10</div>
+            </div>
+            <h2>Complete Tech Stack Overview</h2>
+            <div class="content-full">
+                <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                    <!-- Data Flow Visualization -->
+                    <div style="display: flex; align-items: stretch; justify-content: space-between; gap: 15px; margin-bottom: 40px;">
+                        <!-- Source -->
+                        <div style="flex: 1; background: #f0f9ff; padding: 20px; border-radius: 10px; border: 2px solid #3b82f6;">
+                            <h4 style="color: #1e40af; margin-bottom: 10px; text-align: center;">📊 Data Sources</h4>
+                            <div style="font-size: 12px; color: #666; text-align: center;">
+                                <p>Pension Funds</p>
+                                <p>PE Firms</p>
+                                <p>Russell 3000</p>
+                                <p>Podcasts & Media</p>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center;">→</div>
+                        
+                        <!-- Ingestion -->
+                        <div style="flex: 1.5; background: #eff6ff; padding: 20px; border-radius: 10px; border: 2px solid #60a5fa;">
+                            <h4 style="color: #2563eb; margin-bottom: 10px; text-align: center;">🔄 Ingestion Pipeline</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px; color: #666;">
+                                <div>
+                                    <strong>Discovery:</strong><br/>
+                                    Firecrawl, Jina.ai<br/>
+                                    PodcastIndex API
+                                </div>
+                                <div>
+                                    <strong>Capture:</strong><br/>
+                                    Meeting Bots<br/>
+                                    GCP Storage
+                                </div>
+                                <div>
+                                    <strong>Process:</strong><br/>
+                                    Deepgram/Whisper<br/>
+                                    Google Gemini
+                                </div>
+                                <div>
+                                    <strong>Analyze:</strong><br/>
+                                    GPT-4o, o3<br/>
+                                    BERT NER
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center;">→</div>
+                        
+                        <!-- Intelligence -->
+                        <div style="flex: 1.5; background: #fef3c7; padding: 20px; border-radius: 10px; border: 2px solid #fbbf24;">
+                            <h4 style="color: #d97706; margin-bottom: 10px; text-align: center;">🧠 Intelligence Layer</h4>
+                            <div style="font-size: 12px; color: #666;">
+                                <p><strong>Knowledge Graph:</strong> PostgreSQL → Neo4j</p>
+                                <p><strong>Search:</strong> Elasticsearch</p>
+                                <p><strong>Embeddings:</strong> OpenAI + Elastic</p>
+                                <p><strong>Continuous Learning</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center;">→</div>
+                        
+                        <!-- Delivery -->
+                        <div style="flex: 1; background: #fee2e2; padding: 20px; border-radius: 10px; border: 2px solid #f87171;">
+                            <h4 style="color: #dc2626; margin-bottom: 10px; text-align: center;">📱 Delivery</h4>
+                            <div style="font-size: 12px; color: #666; text-align: center;">
+                                <p><strong>Web App:</strong><br/>Next.js/React</p>
+                                <p><strong>API:</strong><br/>Python/Flask</p>
+                                <p><strong>Alerts:</strong><br/>AI + AWS SES</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Infrastructure Layer -->
+                    <div style="background: #f3f4f6; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h4 style="color: #374151; margin-bottom: 10px;">☁️ Infrastructure</h4>
+                        <div style="display: flex; justify-content: center; gap: 20px; font-size: 14px; color: #666;">
+                            <span>GCP Cloud Run</span>
+                            <span>•</span>
+                            <span>Digital Ocean → GKE</span>
+                            <span>•</span>
+                            <span>Vercel</span>
+                            <span>•</span>
+                            <span>Celery Orchestration</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Knowledge Graph Seeding -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="tech-badge">Osmosis Tech Stack</div>
+                <div class="slide-number">3 / 10</div>
+            </div>
+            <h2>1. Dynamic Knowledge Graph</h2>
+            <div class="content-grid">
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <h3>Living Map That Grows</h3>
+                        <ul style="margin-left: 20px; color: #666;">
+                            <li>Every fund, allocator, exec, and recurring meeting</li>
+                            <li><strong>Dynamically adds new orgs/speakers as encountered</strong></li>
+                            <li>Enriches via org websites & conversation channels</li>
+                            <li>5,000+ allocators target by Sept 2025</li>
+                        </ul>
+                    </div>
+                    <div class="flow-step">
+                        <h3>Intelligent Orchestration</h3>
+                        <p style="color: #666; font-weight: 600; margin-bottom: 10px;">The graph tells us who matters, where they meet, and when they speak</p>
+                        <p style="color: #666;">Dispatches agentic crawlers to "ghost-attend" thousands of live events</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">PostgreSQL → Neo4j</span>
+                            <span class="tech-item">OpenAI Responses API</span>
+                            <span class="tech-item">DiffBot API</span>
+                            <span class="tech-item">Wikidata API</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 72px; font-weight: bold; color: #3b82f6;">🧠</div>
+                        <p style="font-size: 24px; font-weight: 600; color: #1a1a1a; margin-top: 20px;">Self-improving system</p>
+                        <p style="color: #666; margin-top: 10px;">Not just seeding—continuously discovering</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Content Discovery -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="tech-badge">Osmosis Tech Stack</div>
+                <div class="slide-number">4 / 10</div>
+            </div>
+            <h2>2. Capturing Millions of Events</h2>
+            <div class="content-full">
+                <div style="background: #fee2e2; padding: 30px; border-radius: 15px; margin-bottom: 30px; text-align: center;">
+                    <p style="font-size: 24px; font-weight: 600; color: #dc2626;">⚡ 2.6M+ Public Events Annually</p>
+                    <p style="color: #7f1d1d; margin-top: 10px;">When any of these disappear, we've already archived them. Competitors can't backfill what's gone.</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                    <div class="flow-step" style="padding: 15px;">
+                        <h4 style="color: #3b82f6; font-size: 16px;">Government & Regulatory</h4>
+                        <p style="font-size: 24px; font-weight: bold; color: #1a1a1a;">1.5-2M</p>
+                        <p style="font-size: 12px; color: #666;">Local meetings alone</p>
+                    </div>
+                    <div class="flow-step" style="padding: 15px;">
+                        <h4 style="color: #3b82f6; font-size: 16px;">Earnings Calls</h4>
+                        <p style="font-size: 24px; font-weight: bold; color: #1a1a1a;">50K+</p>
+                        <p style="font-size: 12px; color: #666;">Global public companies</p>
+                    </div>
+                    <div class="flow-step" style="padding: 15px;">
+                        <h4 style="color: #3b82f6; font-size: 16px;">Finance Content</h4>
+                        <p style="font-size: 24px; font-weight: bold; color: #1a1a1a;">35K+</p>
+                        <p style="font-size: 12px; color: #666;">Podcasts, webinars, conferences</p>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+                    <div class="flow-step">
+                        <h3>Agentic Infrastructure</h3>
+                        <p style="color: #666;">Ghost-attend via Zoom, livestreams, telephony</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">Redundancy across sources</span>
+                            <span class="tech-item">Advanced de-duplication</span>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <h3>Enrichment Channels</h3>
+                        <p style="color: #666;">Monitor all channels: websites, docs, conversations</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">Firecrawl</span>
+                            <span class="tech-item">Jina.ai</span>
+                            <span class="tech-item">GCP Cloud Run</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Content Capture -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="tech-badge">Osmosis Tech Stack</div>
+                <div class="slide-number">5 / 10</div>
+            </div>
+            <h2>3. Intelligent Content Capture</h2>
+            <div class="content-grid">
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <h3>Live Events</h3>
+                        <p style="color: #666;">Automated meeting bots join and capture in real-time</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">Custom Twilio Agent</span>
+                            <span class="tech-item">Fireflies</span>
+                            <span class="tech-item">Recall.ai</span>
+                            <span class="tech-item">Custom Zoom Agent</span>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <h3>Media & Documents</h3>
+                        <p style="color: #666;">Podcasts, videos, and documents archived with metadata</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">GCP Cloud Storage</span>
+                            <span class="tech-item">Metadata Extraction</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">🎯</div>
+                        <p style="font-size: 20px; font-weight: 600; color: #3b82f6;">Real-time Capture</p>
+                        <p style="color: #666; margin-top: 10px;">Zero content missed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Ingestion -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="tech-badge">Osmosis Tech Stack</div>
+                <div class="slide-number">6 / 10</div>
+            </div>
+            <h2>4. Audio-Specific NLP Pipeline</h2>
+            <div class="content-full">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 30px rgba(0,0,0,0.1);">
+                        <h3 style="color: #3b82f6; margin-bottom: 20px;">🎙️ Built for Spoken Chaos</h3>
+                        <div class="flow-diagram">
+                            <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                <p style="font-weight: 600;">1. Diarization</p>
+                                <p style="color: #666; font-size: 14px;">Who's speaking when</p>
+                            </div>
+                            <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                <p style="font-weight: 600;">2. Speaker ID via Graph</p>
+                                <p style="color: #666; font-size: 14px;">Nate Weinstein at Osmosis, not "analyst"</p>
+                                <p style="color: #3b82f6; font-size: 12px; margin-top: 5px;">This alone is truly difficult—impossible without KG</p>
+                            </div>
+                            <div style="background: #f0f9ff; padding: 15px; border-radius: 8px;">
+                                <p style="font-weight: 600;">3. Delta Detection</p>
+                                <p style="color: #666; font-size: 14px;">What changed since last quarter</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 30px rgba(0,0,0,0.1);">
+                        <h3 style="color: #fb923c; margin-bottom: 20px;">📄 Multi-Modal Documents</h3>
+                        <div class="flow-diagram">
+                            <div style="background: #fff7ed; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                <p style="font-weight: 600;">First-Class Citizens</p>
+                                <p style="color: #666; font-size: 14px;">Board books, meeting minutes, PDFs</p>
+                            </div>
+                            <div style="background: #fff7ed; padding: 15px; border-radius: 8px;">
+                                <p style="font-weight: 600;">Intelligent Narration</p>
+                                <p style="color: #666; font-size: 14px;">Google Gemini for deeper context</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: #e0e7ff; padding: 20px; border-radius: 10px; margin-top: 30px; text-align: center;">
+                    <p style="font-size: 18px; font-weight: 600; color: #4338ca;">Small, deterministic models → Fast, cheap, and resilient</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Analysis -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="tech-badge">Osmosis Tech Stack</div>
+                <div class="slide-number">7 / 10</div>
+            </div>
+            <h2>5. Pull Out the "So What"</h2>
+            <div class="content-grid">
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <h3>Progressive Intelligence</h3>
+                        <p style="color: #666;">LLMs flag mandates, sentiment shifts, and changes</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">OpenAI GPT-4o</span>
+                            <span class="tech-item">See change, not noise</span>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <h3>Know Who's Talking</h3>
+                        <p style="color: #666;">Tag every quote to the right allocator, fund, or regulator</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">BERT-Large NER</span>
+                            <span class="tech-item">Knowledge Graph Linking</span>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <h3>Delta Analysis (NEW)</h3>
+                        <p style="color: #666;">Track narrative shifts across time</p>
+                        <p style="font-size: 12px; color: #3b82f6; margin-top: 5px;">You can't replay a meeting that no longer exists</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">OpenAI o3</span>
+                            <span class="tech-item">FAISS</span>
+                            <span class="tech-item">Historical Archive</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;">
+                    <div style="background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; padding: 30px; border-radius: 15px; text-align: center;">
+                        <div style="font-size: 36px; font-weight: bold;">
+                            "Real-time intelligence, tailored to you."
+                        </div>
+                        <div style="font-size: 20px; margin-top: 10px;">Not another inbox dump</div>
+                    </div>
+                    <p style="text-align: center; color: #666; max-width: 300px;">Every click and comment feeds back to the ranking engine—next alert is even sharper</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Indexing -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="tech-badge">Osmosis Tech Stack</div>
+                <div class="slide-number">8 / 10</div>
+            </div>
+            <h2>6. Compound Defensibility Engine</h2>
+            <div class="content-full">
+                <div style="background: #fef3c7; padding: 30px; border-radius: 15px; margin-bottom: 30px; text-align: center;">
+                    <p style="font-size: 24px; font-weight: 600; color: #d97706;">🔄 Feedback Flywheel</p>
+                    <p style="color: #92400e; margin-top: 10px;">Every click sharpens ranking → more usage → sharper ranking → compound moat</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
+                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 30px rgba(0,0,0,0.1); text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📚</div>
+                        <h3 style="color: #3b82f6; margin-bottom: 10px;">Historical Archive</h3>
+                        <p style="color: #666; font-size: 14px;">Grows daily—others start at zero</p>
+                        <p style="color: #dc2626; font-size: 12px; margin-top: 5px; font-weight: 600;">Can't backfill vanished data</p>
+                    </div>
+                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 30px rgba(0,0,0,0.1); text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">🔍</div>
+                        <h3 style="color: #3b82f6; margin-bottom: 10px;">Lightning Search</h3>
+                        <p style="color: #666; font-size: 14px;">Semantic + traditional retrieval</p>
+                        <div class="tech-stack" style="justify-content: center; margin-top: 15px;">
+                            <span class="tech-item">Elasticsearch</span>
+                            <span class="tech-item">OpenAI Embeddings</span>
+                        </div>
+                    </div>
+                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 30px rgba(0,0,0,0.1); text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">🎯</div>
+                        <h3 style="color: #3b82f6; margin-bottom: 10px;">User Queries</h3>
+                        <p style="color: #666; font-size: 14px;">Tune answers to every use case</p>
+                        <p style="color: #059669; font-size: 12px; margin-top: 5px; font-weight: 600;">66%+ email open rates</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Delivery -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="tech-badge">Osmosis Tech Stack</div>
+                <div class="slide-number">9 / 10</div>
+            </div>
+            <h2>7. Slot Straight Into Your Workflow</h2>
+            <div class="content-grid">
+                <div>
+                    <div class="flow-step" style="margin-bottom: 20px;">
+                        <h3>⚡ Push Alerts While Actionable</h3>
+                        <p style="color: #666;">Configure topics once—get pinged within seconds</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">OpenAI o3</span>
+                            <span class="tech-item">AWS SES</span>
+                            <span class="tech-item">SMS & In-App (next)</span>
+                        </div>
+                    </div>
+                    <div class="flow-step" style="margin-bottom: 20px;">
+                        <h3>🔌 Enterprise Integrations (future)</h3>
+                        <p style="color: #666;">Send insights with a click</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">Salesforce</span>
+                            <span class="tech-item">DealCloud</span>
+                            <span class="tech-item">Backstop</span>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <h3>🚀 Enterprise API Suite</h3>
+                        <p style="color: #666;">Production-ready REST API (Live at Marshall Wace)</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">Platform Revenue</span>
+                            <span class="tech-item">OEM Partnerships</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 6px 30px rgba(0,0,0,0.1);">
+                            <div style="font-size: 64px; margin-bottom: 20px;">🎯</div>
+                            <p style="font-size: 20px; font-weight: 600; color: #1a1a1a;">Real-time intelligence</p>
+                            <p style="font-size: 18px; color: #666; margin-top: 10px;">for capital raisers who can't afford to be late</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Complete Architecture -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="tech-badge">Osmosis Tech Stack</div>
+                <div class="slide-number">10 / 10</div>
+            </div>
+            <h2>Why Incumbents Can't Catch Up</h2>
+            <div class="content-full">
+                <div style="background: #fee2e2; padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center;">
+                    <p style="font-size: 24px; font-weight: 600; color: #dc2626;">Legacy players index what's already published. Osmosis captures what's about to disappear.</p>
+                </div>
+                
+                <div class="architecture-diagram" style="padding: 20px; gap: 15px;">
+                    <div class="arch-component" style="grid-column: span 3; background: #1e293b; color: white; padding: 15px;">
+                        <h4>🌐 The Unindexed Web</h4>
+                        <p style="font-size: 14px; color: #cbd5e1;">Zoom Rooms • Livestreams • Meeting Portals • Documents that vanish</p>
+                    </div>
+                    
+                    <div class="arch-component" style="background: #f0f9ff; padding: 15px;">
+                        <h4>🧠 Dynamic KG</h4>
+                        <p style="font-size: 12px; color: #666;">Who matters, where they meet</p>
+                    </div>
+                    <div class="arch-component" style="background: #f0f9ff; padding: 15px;">
+                        <h4>👻 Ghost-Attend</h4>
+                        <p style="font-size: 12px; color: #666;">Agentic crawlers capture</p>
+                    </div>
+                    <div class="arch-component" style="background: #f0f9ff; padding: 15px;">
+                        <h4>🎙️ Audio NLP</h4>
+                        <p style="font-size: 12px; color: #666;">Built for spoken chaos</p>
+                    </div>
+                    
+                    <div class="arch-component" style="grid-column: span 3; background: linear-gradient(135deg, #fef3c7, #fee2e2); padding: 15px;">
+                        <h4>🔒 Compound Moat</h4>
+                        <div style="display: flex; justify-content: center; gap: 30px; margin-top: 10px;">
+                            <span style="font-size: 14px;"><strong>Historical Archive</strong> (can't backfill)</span>
+                            <span style="font-size: 14px;">•</span>
+                            <span style="font-size: 14px;"><strong>Feedback Flywheel</strong> (gets smarter)</span>
+                            <span style="font-size: 14px;">•</span>
+                            <span style="font-size: 14px;"><strong>Delta History</strong> (unique insights)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="arch-component" style="padding: 15px;">
+                        <h4>🚀 Enterprise API</h4>
+                        <p style="font-size: 12px; color: #666;">Live at Marshall Wace</p>
+                    </div>
+                    <div class="arch-component" style="padding: 15px;">
+                        <h4>⚡ Real-time Alerts</h4>
+                        <p style="font-size: 12px; color: #666;">66%+ open rates</p>
+                    </div>
+                    <div class="arch-component" style="padding: 15px;">
+                        <h4>🔌 Integrations</h4>
+                        <p style="font-size: 12px; color: #666;">Salesforce, DealCloud</p>
+                    </div>
+                </div>
+                
+                <div style="background: #e0e7ff; padding: 20px; border-radius: 10px; text-align: center;">
+                    <p style="font-size: 18px; font-weight: 600; color: #4338ca;">For incumbents, replicating Osmosis isn't building a feature. It's rebuilding their entire stack.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="changeSlide(-1)">Previous</button>
+            <button id="nextBtn" onclick="changeSlide(1)">Next</button>
+        </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 10;
+
+        function showSlide(n) {
+            const slides = document.getElementsByClassName('slide');
+            
+            if (n > totalSlides) currentSlide = 1;
+            if (n < 1) currentSlide = totalSlides;
+            
+            for (let i = 0; i < slides.length; i++) {
+                slides[i].classList.remove('active');
+            }
+            
+            slides[currentSlide - 1].classList.add('active');
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+        }
+
+        function changeSlide(n) {
+            currentSlide += n;
+            showSlide(currentSlide);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>
