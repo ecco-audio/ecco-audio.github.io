@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capital Markets 101: How the Ecosystem Works</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Sans+Condensed:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+        
+        :root {
+            --radius: 0.625rem;
+            --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+            --font-mono: "IBM Plex Mono", monospace;
+            --font-heading: "IBM Plex Sans Condensed", system-ui, sans-serif;
+            
+            --color-primary: #0a0a0a;
+            --color-secondary: rgb(248, 97, 60);
+            --color-accent: rgb(42, 96, 248);
+            --color-background: white;
+            --color-foreground: #0a0a0a;
+            
+            --surface-50: #F9FAFB;
+            --border-100: #ECEFF3;
+            --ink-900: #0F1226;
+            --ink-700: #30364D;
+            --ink-500: #5A6178;
+            --brand-primary-600: #3B43F2;
+            --brand-gradient: linear-gradient(90deg, #1A2FFB 0%, #44B0FF 100%);
+            --money-green: #1C8A49;
+            --money-green-light: #E9F7EF;
+            --warning-orange: #D97706;
+            --warning-orange-light: #FEF3C7;
+            --shadow-elev-2: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+            --shadow-elev-3: 0 1px 3px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            color: var(--color-foreground);
+            background: var(--color-background);
+            overflow-x: hidden;
+        }
+        
+        .presentation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease;
+            padding: 80px 60px 140px;
+            overflow-y: auto;
+        }
+        
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* Navigation */
+        .nav-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-elev-3);
+        }
+        
+        .nav-btn {
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-family: var(--font-mono);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-btn:hover {
+            background: #1D054F;
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .slide-indicator {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Typography */
+        .hero-headline {
+            font-family: var(--font-heading);
+            font-size: 70px;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin-bottom: 30px;
+            font-weight: 300;
+            color: var(--ink-900);
+        }
+        
+        .hero-headline-bold {
+            font-weight: 600;
+            color: var(--color-accent);
+        }
+        
+        .section-header {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            font-size: 52px;
+            line-height: 110%;
+            letter-spacing: -0.04em;
+            color: #1D054F;
+            margin-bottom: 40px;
+        }
+        
+        .section-subheader {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            font-size: 36px;
+            line-height: 110%;
+            letter-spacing: -0.03em;
+            color: #1D054F;
+            margin-bottom: 30px;
+        }
+        
+        .section-pill {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 12px;
+            line-height: 20px;
+            color: var(--color-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 24px;
+            display: inline-block;
+            padding: 6px 12px;
+            border: 1px solid var(--color-secondary);
+            border-radius: 20px;
+        }
+        
+        .body-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--ink-700);
+            margin-bottom: 20px;
+        }
+        
+        .body-text-large {
+            font-size: 22px;
+            line-height: 1.7;
+            color: var(--ink-700);
+            margin-bottom: 24px;
+        }
+        
+        /* Flow Diagram Styles */
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .flow-box {
+            background: var(--surface-50);
+            border: 2px solid var(--border-100);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        .flow-box:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-elev-2);
+        }
+        
+        .flow-box.highlight {
+            border-color: var(--color-accent);
+            background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+        }
+        
+        .flow-box.money {
+            border-color: var(--money-green);
+            background: var(--money-green-light);
+        }
+        
+        .flow-box-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .flow-box-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ink-900);
+            margin-bottom: 8px;
+        }
+        
+        .flow-box-subtitle {
+            font-size: 14px;
+            color: var(--ink-500);
+        }
+        
+        .flow-arrow {
+            font-size: 32px;
+            color: var(--color-accent);
+        }
+        
+        .flow-arrow-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--ink-500);
+            text-align: center;
+            display: block;
+            margin-top: -8px;
+        }
+        
+        /* Cards and Grids */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: var(--surface-50);
+            border: 1px solid var(--border-100);
+            border-radius: 16px;
+            padding: 28px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .info-card:hover {
+            box-shadow: var(--shadow-elev-2);
+            transform: translateY(-2px);
+        }
+        
+        .info-card h3 {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--ink-900);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .info-card p {
+            color: var(--ink-700);
+            line-height: 1.6;
+        }
+        
+        /* Callout Boxes */
+        .callout {
+            background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+            border-left: 4px solid var(--color-accent);
+            border-radius: 0 12px 12px 0;
+            padding: 24px 28px;
+            margin: 30px 0;
+        }
+        
+        .callout-title {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--color-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+        
+        .callout p {
+            color: var(--ink-700);
+            font-size: 17px;
+            line-height: 1.6;
+        }
+        
+        /* Money Math Section */
+        .money-math {
+            background: var(--money-green-light);
+            border: 2px solid var(--money-green);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 30px 0;
+        }
+        
+        .money-math h4 {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--money-green);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+        }
+        
+        .math-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            font-family: var(--font-mono);
+            font-size: 18px;
+        }
+        
+        .math-label {
+            color: var(--ink-700);
+            min-width: 200px;
+        }
+        
+        .math-value {
+            color: var(--money-green);
+            font-weight: 600;
+        }
+        
+        .math-divider {
+            width: 100%;
+            height: 2px;
+            background: var(--money-green);
+            opacity: 0.3;
+            margin: 20px 0;
+        }
+        
+        /* Timeline */
+        .timeline {
+            position: relative;
+            margin: 40px 0;
+            padding-left: 40px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-100);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 32px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 6px;
+            width: 16px;
+            height: 16px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--color-accent);
+        }
+        
+        .timeline-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ink-900);
+            margin-bottom: 8px;
+        }
+        
+        .timeline-content {
+            color: var(--ink-700);
+            line-height: 1.6;
+        }
+        
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 30px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-elev-2);
+        }
+        
+        .comparison-table th {
+            background: var(--ink-900);
+            color: white;
+            font-family: var(--font-heading);
+            font-weight: 500;
+            padding: 20px 24px;
+            text-align: left;
+        }
+        
+        .comparison-table td {
+            background: white;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-100);
+            color: var(--ink-700);
+        }
+        
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .comparison-table tr:hover td {
+            background: var(--surface-50);
+        }
+        
+        /* Osmosis Highlight */
+        .osmosis-highlight {
+            background: var(--brand-gradient);
+            color: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin: 40px 0;
+            text-align: center;
+        }
+        
+        .osmosis-highlight h3 {
+            font-family: var(--font-heading);
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+        
+        .osmosis-highlight p {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* Quiz/Interactive Section */
+        .quiz-section {
+            background: var(--surface-50);
+            border: 1px solid var(--border-100);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 30px 0;
+        }
+        
+        .quiz-question {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            color: var(--ink-900);
+            margin-bottom: 24px;
+        }
+        
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .quiz-option {
+            background: white;
+            border: 2px solid var(--border-100);
+            border-radius: 12px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+        
+        .quiz-option:hover {
+            border-color: var(--color-accent);
+            background: #F8FAFF;
+        }
+        
+        .quiz-option.selected {
+            border-color: var(--color-accent);
+            background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+        }
+        
+        /* Key Insight */
+        .key-insight {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            background: var(--warning-orange-light);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        
+        .key-insight-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+        
+        .key-insight-content h4 {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            color: var(--warning-orange);
+            margin-bottom: 8px;
+        }
+        
+        .key-insight-content p {
+            color: var(--ink-700);
+            line-height: 1.5;
+        }
+        
+        /* Two Column Layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        
+        @media (max-width: 900px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="slide-content" style="text-align: center;">
+                <div class="section-pill">Osmosis Team Primer</div>
+                <h1 class="hero-headline">
+                    Capital Markets 101<br>
+                    <span class="hero-headline-bold">How the Money Flows</span>
+                </h1>
+                <p class="body-text-large" style="max-width: 700px; margin: 30px auto;">
+                    A foundational guide to understanding the ecosystem we sell into—who the players are, how they make money, and where Osmosis fits.
+                </p>
+                <div style="margin-top: 60px; font-family: var(--font-mono); color: var(--ink-500); font-size: 14px;">
+                    Use arrow keys or buttons below to navigate →
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 2: The Fundamental Question -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Start Here</div>
+                <h2 class="section-header">The Fundamental Question</h2>
+                
+                <p class="body-text-large">
+                    Imagine you're in capital markets. You're an asset manager. What's your job?
+                </p>
+                
+                <div class="callout">
+                    <div class="callout-title">The Simple Answer</div>
+                    <p style="font-size: 24px; font-weight: 500; color: var(--ink-900);">
+                        Your job is to <strong>get money</strong> and <strong>invest it well</strong>.
+                    </p>
+                </div>
+                
+                <p class="body-text">
+                    That's it. Everything else flows from this. But here's the thing: these are actually <em>two different jobs</em>, often done by different people with different skills and incentives.
+                </p>
+                
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>🎯 Job #1: Get the Money</h3>
+                        <p>Convince allocators (pension funds, endowments, family offices, sovereign wealth funds) to give you their capital to manage.</p>
+                        <p style="margin-top: 12px; font-style: italic; color: var(--ink-500);">This is fundraising. This is where Osmosis plays.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>📈 Job #2: Invest It Well</h3>
+                        <p>Put that capital to work—in public equities, private markets, lending, infrastructure, real estate—and generate returns.</p>
+                        <p style="margin-top: 12px; font-style: italic; color: var(--ink-500);">This is portfolio management.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 3: How the Money Flows -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">The Big Picture</div>
+                <h2 class="section-header">How the Money Flows</h2>
+                
+                <p class="body-text">
+                    Capital markets exist to move money from people who have it to places where it can grow. Here's the basic flow:
+                </p>
+                
+                <div class="flow-container">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">🏛️</div>
+                        <div class="flow-box-title">Allocators</div>
+                        <div class="flow-box-subtitle">Pension funds, endowments,<br>sovereign wealth, family offices</div>
+                    </div>
+                    
+                    <div>
+                        <div class="flow-arrow">→</div>
+                        <span class="flow-arrow-label">give capital to</span>
+                    </div>
+                    
+                    <div class="flow-box highlight">
+                        <div class="flow-box-icon">💼</div>
+                        <div class="flow-box-title">Asset Managers</div>
+                        <div class="flow-box-subtitle">Hedge funds, PE firms,<br>venture capital, credit funds</div>
+                    </div>
+                    
+                    <div>
+                        <div class="flow-arrow">→</div>
+                        <span class="flow-arrow-label">who invest in</span>
+                    </div>
+                    
+                    <div class="flow-box">
+                        <div class="flow-box-icon">🌍</div>
+                        <div class="flow-box-title">Investments</div>
+                        <div class="flow-box-subtitle">Companies, real estate,<br>infrastructure, loans</div>
+                    </div>
+                </div>
+                
+                <div class="key-insight">
+                    <div class="key-insight-icon">💡</div>
+                    <div class="key-insight-content">
+                        <h4>Why This Matters for Osmosis</h4>
+                        <p>We help with that first arrow—the relationship between allocators and asset managers. Specifically, we help asset managers understand what allocators are thinking, saying, and doing so they can raise capital more effectively.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 4: Who Are the Allocators? -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">The Money Sources</div>
+                <h2 class="section-header">Who Are the Allocators?</h2>
+                
+                <p class="body-text">
+                    Allocators are institutions that have massive pools of capital they need to invest. They don't invest it all themselves—they give chunks of it to asset managers who specialize in different strategies.
+                </p>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Allocator Type</th>
+                            <th>What They Are</th>
+                            <th>Examples</th>
+                            <th>Typical AUM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Public Pension Funds</strong></td>
+                            <td>Retirement money for government employees</td>
+                            <td>CalPERS, NY State Common, Texas Teachers</td>
+                            <td>$50B - $500B+</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Endowments</strong></td>
+                            <td>University and foundation investment pools</td>
+                            <td>Harvard, Yale, Stanford, Gates Foundation</td>
+                            <td>$10B - $50B</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sovereign Wealth Funds</strong></td>
+                            <td>National investment funds (often oil money)</td>
+                            <td>Norway GPFG, Abu Dhabi ADIA, Singapore GIC</td>
+                            <td>$100B - $1T+</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Family Offices</strong></td>
+                            <td>Wealth management for ultra-rich families</td>
+                            <td>Walton Enterprises, Bezos Expeditions</td>
+                            <td>$1B - $100B</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Insurance Companies</strong></td>
+                            <td>Investing premium income</td>
+                            <td>MetLife, Prudential, AIG</td>
+                            <td>$100B - $500B</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="callout">
+                    <div class="callout-title">The Osmosis Angle</div>
+                    <p>These allocators are constantly talking—at conferences, in interviews, in regulatory hearings. They're signaling what they want to invest in, which managers they like, and where they see opportunity. <strong>That spoken content is gold for asset managers trying to raise from them.</strong></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 5: Asset Manager Strategies -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Investment Approaches</div>
+                <h2 class="section-header">What Do Asset Managers Actually Do?</h2>
+                
+                <p class="body-text">
+                    Asset managers have a "view of the world"—a thesis about the best way to turn a dollar into more dollars. Here are the main approaches:
+                </p>
+                
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>📊 Public Equities</h3>
+                        <p>Buying stocks in publicly traded companies. Can be passive (index funds) or active (stock picking). Most liquid, most transparent.</p>
+                        <p style="margin-top: 12px; color: var(--ink-500); font-size: 14px;"><strong>Players:</strong> Fidelity, BlackRock, Citadel</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>🏢 Private Equity</h3>
+                        <p>Buying private companies (or taking public ones private), improving them, and selling. Illiquid—money locked up for years.</p>
+                        <p style="margin-top: 12px; color: var(--ink-500); font-size: 14px;"><strong>Players:</strong> Blackstone, KKR, Apollo</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>💳 Private Credit</h3>
+                        <p>Lending money directly to companies (instead of buying equity). Predictable income streams. Growing fast.</p>
+                        <p style="margin-top: 12px; color: var(--ink-500); font-size: 14px;"><strong>Players:</strong> Ares, Blue Owl, Golub</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>🚀 Venture Capital</h3>
+                        <p>Investing in early-stage startups. High risk, potentially huge returns. Very relationship-driven.</p>
+                        <p style="margin-top: 12px; color: var(--ink-500); font-size: 14px;"><strong>Players:</strong> Sequoia, a16z, Benchmark</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>🏗️ Infrastructure</h3>
+                        <p>Investing in physical assets—bridges, airports, data centers, power plants. Long-term, stable returns.</p>
+                        <p style="margin-top: 12px; color: var(--ink-500); font-size: 14px;"><strong>Players:</strong> Brookfield, Macquarie, Global Infrastructure Partners</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>🏠 Real Estate</h3>
+                        <p>Buying and managing properties—office, retail, residential, industrial. Income from rent + appreciation.</p>
+                        <p style="margin-top: 12px; color: var(--ink-500); font-size: 14px;"><strong>Players:</strong> Blackstone RE, Starwood, Prologis</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Asset Manager Strategies Deep Dive - Public Markets -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Strategy Deep Dive</div>
+                <h2 class="section-header">Public Markets Strategies</h2>
+
+                <h3 class="section-subheader" style="font-size: 28px; margin-top: 20px;">Equities</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>What They Do</th>
+                            <th>Key Players</th>
+                            <th>Fees</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Long-Only / Traditional</strong></td>
+                            <td>Buy stocks, hold them. Benchmark against indices.</td>
+                            <td>Fidelity, T. Rowe Price, Capital Group, Wellington</td>
+                            <td>~0.5-1% mgmt</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Long-Short / Hedge Funds</strong></td>
+                            <td>Buy stocks they like, short stocks they don't. Market-neutral or directional.</td>
+                            <td>Citadel, Millennium, Point72, DE Shaw</td>
+                            <td>2/20 (often 1.5/15-20)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Quantitative / Systematic</strong></td>
+                            <td>Algorithmic trading, statistical arbitrage.</td>
+                            <td>Renaissance, Two Sigma, DE Shaw, Citadel</td>
+                            <td>2/20+ (top quants charge more)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subheader" style="font-size: 28px; margin-top: 30px;">Fixed Income</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>What They Do</th>
+                            <th>Key Players</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Investment Grade</strong></td>
+                            <td>Corporate bonds, government bonds. Safe, steady.</td>
+                            <td>PIMCO, DoubleLine, Western Asset</td>
+                        </tr>
+                        <tr>
+                            <td><strong>High Yield</strong></td>
+                            <td>Junk bonds. Higher risk, higher return.</td>
+                            <td>Oaktree, PGIM, Ares</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Emerging Market Debt</strong></td>
+                            <td>Government and corporate bonds from developing nations.</td>
+                            <td>Ashmore, PIMCO, GMO</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 7: Private Markets Strategies -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Strategy Deep Dive</div>
+                <h2 class="section-header">Private Markets Strategies</h2>
+
+                <h3 class="section-subheader" style="font-size: 28px; margin-top: 20px;">Private Equity</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>What They Do</th>
+                            <th>Key Players</th>
+                            <th>Fund Life</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Buyout / LBO</strong></td>
+                            <td>Buy controlling stakes in mature companies, improve operations, sell.</td>
+                            <td>Blackstone, KKR, Apollo, Carlyle, TPG</td>
+                            <td>10-12 years</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Growth Equity</strong></td>
+                            <td>Minority stakes in fast-growing companies. Less leverage than buyout.</td>
+                            <td>General Atlantic, TA Associates, Summit</td>
+                            <td>10-12 years</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Venture Capital</strong></td>
+                            <td>Early-stage startups. High risk, power-law returns.</td>
+                            <td>Sequoia, a16z, Benchmark, Founders Fund</td>
+                            <td>10-12 years</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subheader" style="font-size: 28px; margin-top: 30px;">Private Credit</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>What They Do</th>
+                            <th>Key Players</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Direct Lending</strong></td>
+                            <td>Loans directly to middle-market companies (bypassing banks).</td>
+                            <td>Ares, Blue Owl, Golub, HPS, Owl Rock</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Distressed / Special Sits</strong></td>
+                            <td>Buy debt of troubled companies at a discount.</td>
+                            <td>Oaktree, Apollo, Elliott</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mezzanine</strong></td>
+                            <td>Subordinated debt, often with equity kickers.</td>
+                            <td>Golub, Crescent, Audax</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 8: Real Assets & Specialty -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Strategy Deep Dive</div>
+                <h2 class="section-header">Real Assets & Specialty Strategies</h2>
+
+                <div class="two-col">
+                    <div>
+                        <h3 class="section-subheader" style="font-size: 24px;">Real Assets</h3>
+                        <div class="info-card" style="margin-bottom: 16px;">
+                            <h3>🏠 Real Estate</h3>
+                            <p>Buy/develop/manage properties (office, industrial, multifamily, retail).</p>
+                            <p style="margin-top: 8px; font-size: 14px; color: var(--ink-500);"><strong>Players:</strong> Blackstone, Starwood, Brookfield, Prologis</p>
+                        </div>
+                        <div class="info-card" style="margin-bottom: 16px;">
+                            <h3>🏗️ Infrastructure</h3>
+                            <p>Bridges, airports, toll roads, data centers, renewables. Long-duration, stable cash flows.</p>
+                            <p style="margin-top: 8px; font-size: 14px; color: var(--ink-500);"><strong>Players:</strong> Brookfield, GIP, Macquarie, Stonepeak</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>⛽ Natural Resources</h3>
+                            <p>Oil & gas, mining, timber, agriculture.</p>
+                            <p style="margin-top: 8px; font-size: 14px; color: var(--ink-500);"><strong>Players:</strong> EnCap, NGP, Quantum Energy</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="section-subheader" style="font-size: 24px;">Specialty / Niche</h3>
+                        <div class="info-card" style="margin-bottom: 16px;">
+                            <h3>🔄 Secondaries</h3>
+                            <p>Buy existing LP stakes from LPs who want early liquidity.</p>
+                            <p style="margin-top: 8px; font-size: 14px; color: var(--ink-500);"><strong>Players:</strong> Lexington, Ardian, HarbourVest, Blackstone Strategic Partners</p>
+                        </div>
+                        <div class="info-card" style="margin-bottom: 16px;">
+                            <h3>🤝 Co-Investment</h3>
+                            <p>LPs invest directly alongside the GP in specific deals. Usually no/reduced fees.</p>
+                            <p style="margin-top: 8px; font-size: 14px; color: var(--ink-500);">Not a manager type—it's a product GPs offer</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>📦 Fund of Funds</h3>
+                            <p>Invest in other funds. Access + diversification for smaller LPs.</p>
+                            <p style="margin-top: 8px; font-size: 14px; color: var(--ink-500);"><strong>Players:</strong> HarbourVest, Hamilton Lane, Adams Street</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: The Mega Managers -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">The Giants</div>
+                <h2 class="section-header">The Mega Managers</h2>
+
+                <div class="two-col">
+                    <div>
+                        <h3 class="section-subheader" style="font-size: 22px;">Traditional Asset Management</h3>
+                        <p class="body-text" style="font-size: 15px; margin-bottom: 16px;">Public markets, retail-facing. Money on volume at thin margins. <em>Less relevant for Osmosis.</em></p>
+                        <table class="comparison-table" style="font-size: 14px;">
+                            <thead>
+                                <tr>
+                                    <th>Firm</th>
+                                    <th>AUM</th>
+                                    <th>Known For</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>BlackRock</strong></td>
+                                    <td>~$10T</td>
+                                    <td>Largest in world. iShares. Aladdin.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Vanguard</strong></td>
+                                    <td>~$8T</td>
+                                    <td>Index fund pioneer. Lowest costs.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fidelity</strong></td>
+                                    <td>~$4.5T</td>
+                                    <td>Active + passive. Strong 401(k).</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>State Street</strong></td>
+                                    <td>~$4T</td>
+                                    <td>SPDR ETFs. Custody.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Capital Group</strong></td>
+                                    <td>~$2.5T</td>
+                                    <td>American Funds. Long-term active.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <h3 class="section-subheader" style="font-size: 22px;">Alternative Asset Platforms</h3>
+                        <p class="body-text" style="font-size: 15px; margin-bottom: 16px;">Private markets focus. Dedicated IR teams. <strong style="color: var(--color-accent);">Our sweet spot.</strong></p>
+                        <table class="comparison-table" style="font-size: 14px;">
+                            <thead>
+                                <tr>
+                                    <th>Firm</th>
+                                    <th>AUM</th>
+                                    <th>Key Strategies</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Blackstone</strong></td>
+                                    <td>~$1T</td>
+                                    <td>PE, RE, Credit, Infra</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Brookfield</strong></td>
+                                    <td>~$900B</td>
+                                    <td>Infra, RE, Renewables</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Apollo</strong></td>
+                                    <td>~$650B</td>
+                                    <td>Credit-heavy, PE, Insurance</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>KKR</strong></td>
+                                    <td>~$550B</td>
+                                    <td>PE, Credit, Infra</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ares</strong></td>
+                                    <td>~$425B</td>
+                                    <td>Credit, credit, credit</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Carlyle</strong></td>
+                                    <td>~$425B</td>
+                                    <td>PE, Credit, Global</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="key-insight" style="margin-top: 24px;">
+                    <div class="key-insight-icon">🎯</div>
+                    <div class="key-insight-content">
+                        <h4>Why Platforms Are Our Target</h4>
+                        <p>They have dedicated IR/Capital Formation teams. They're constantly fundraising across products. They care deeply about allocator intelligence.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Platforms vs Pure-Play -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Business Models</div>
+                <h2 class="section-header">Platforms vs. Pure-Play Managers</h2>
+
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="border-color: var(--ink-500); margin-bottom: 24px;">
+                            <h3>🎯 Pure-Play Manager</h3>
+                            <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.8;">
+                                <li>Single strategy or narrow focus</li>
+                                <li>One investment team / thesis</li>
+                                <li>Raises fund-by-fund</li>
+                                <li>Deep specialization</li>
+                            </ul>
+                            <p style="margin-top: 16px; font-size: 14px; color: var(--ink-500);"><strong>Examples:</strong> Sequoia (VC), Silver Lake (tech buyout), PIMCO (fixed income), Oaktree (credit)</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="border-color: var(--color-accent); margin-bottom: 24px;">
+                            <h3>🏢 Platform / Multi-Strategy</h3>
+                            <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.8;">
+                                <li>Multiple strategies under one roof</li>
+                                <li>Multiple investment teams ("pods")</li>
+                                <li>Shared infrastructure: ops, IR, legal, data</li>
+                                <li>Cross-sell to existing LPs</li>
+                            </ul>
+                            <p style="margin-top: 16px; font-size: 14px; color: var(--ink-500);"><strong>Examples:</strong> Blackstone, Apollo, KKR, Carlyle; Citadel, Millennium (hedge)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="section-subheader" style="font-size: 24px; margin-top: 20px;">Why Platforms Have Won</h3>
+                <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="info-card">
+                        <h3 style="font-size: 18px;">🛒 LP Convenience</h3>
+                        <p style="font-size: 14px;">"One-stop shop" — one relationship, access to multiple strategies</p>
+                    </div>
+                    <div class="info-card">
+                        <h3 style="font-size: 18px;">⚡ Operational Leverage</h3>
+                        <p style="font-size: 14px;">One IR team serves 10+ products. Spreads fixed costs.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3 style="font-size: 18px;">🔗 Cross-Selling</h3>
+                        <p style="font-size: 14px;">LP in your PE fund? Pitch them credit. Warm lead.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3 style="font-size: 18px;">👥 Talent Retention</h3>
+                        <p style="font-size: 14px;">Star PM wants new strategy? Do it in-house vs. leaving.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3 style="font-size: 18px;">📊 Diversified Revenue</h3>
+                        <p style="font-size: 14px;">Credit struggling? PE carrying the load. Smooths cycles.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3 style="font-size: 18px;">🏦 Retail Distribution</h3>
+                        <p style="font-size: 14px;">Can afford to build wealth channel infrastructure.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: The Retailization Push -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Big Trend</div>
+                <h2 class="section-header">The Retailization Push</h2>
+
+                <p class="body-text-large">
+                    Institutional market is crowded. Retail is a <strong>$30T+ opportunity</strong>. Platforms are investing heavily.
+                </p>
+
+                <div class="card-grid" style="margin-top: 30px;">
+                    <div class="info-card">
+                        <h3>Blackstone</h3>
+                        <p>BREIT (real estate), BCRED (credit), perpetual infra fund. Pioneered retail alternatives.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Apollo</h3>
+                        <p>Retail credit products via Athene insurance platform.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>KKR</h3>
+                        <p>Interval funds, partnerships with wirehouses (Morgan Stanley, etc.).</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Ares</h3>
+                        <p>Expanding wealth distribution across strategies.</p>
+                    </div>
+                </div>
+
+                <div class="callout" style="margin-top: 30px;">
+                    <div class="callout-title">Osmosis Angle</div>
+                    <p>These firms have <strong>wealth distribution</strong> teams separate from <strong>institutional IR</strong>. Different personas, different needs. The wealth channel requires different products (semi-liquid, lower minimums) and different relationships.</p>
+                </div>
+
+                <div class="key-insight">
+                    <div class="key-insight-icon">💡</div>
+                    <div class="key-insight-content">
+                        <h4>Why This Matters</h4>
+                        <p>As alternatives go retail, the universe of "allocators" expands beyond pensions and endowments to include wirehouses, RIAs, and private banks. More conversations to capture, more intelligence to deliver.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: The Ecosystem - GPs and LPs -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">The Players</div>
+                <h2 class="section-header">The Core Relationship: GPs and LPs</h2>
+
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="border-color: var(--color-accent); background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);">
+                            <h3>💼 GP (General Partner)</h3>
+                            <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.9; font-size: 15px;">
+                                <li>The fund manager</li>
+                                <li>Makes all investment decisions</li>
+                                <li>Charges fees (mgmt + carry)</li>
+                                <li>Has fiduciary duty to LPs</li>
+                                <li>Commits 1-5% of fund ("skin in the game")</li>
+                                <li>Unlimited liability (legally)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="border-color: var(--money-green); background: var(--money-green-light);">
+                            <h3>🏛️ LP (Limited Partner)</h3>
+                            <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.9; font-size: 15px;">
+                                <li>The investor / allocator</li>
+                                <li>Provides capital</li>
+                                <li>Passive — no say in decisions</li>
+                                <li>Limited liability — only lose what committed</li>
+                                <li>Gets preferred return (hurdle) first</li>
+                                <li>Then GP gets carry on profits</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="section-subheader" style="font-size: 24px; margin-top: 30px;">LP Types Expanded</h3>
+                <table class="comparison-table" style="font-size: 14px;">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Allocation to Alts</th>
+                            <th>Decision Speed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Public Pension</strong></td>
+                            <td>Retirement $ for govt employees</td>
+                            <td>20-40%</td>
+                            <td>Slow. Boards, consultants, politics.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Corporate Pension</strong></td>
+                            <td>Retirement $ for corporate employees</td>
+                            <td>15-30%</td>
+                            <td>Medium. Fewer stakeholders.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Endowment</strong></td>
+                            <td>University/foundation pools</td>
+                            <td>40-60%</td>
+                            <td>Medium-fast. Sophisticated, lean.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sovereign Wealth Fund</strong></td>
+                            <td>National investment funds</td>
+                            <td>30-50%</td>
+                            <td>Variable.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Family Office</strong></td>
+                            <td>Ultra-HNW family wealth</td>
+                            <td>Highly variable</td>
+                            <td>Fast. One decision-maker.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Insurance Company</strong></td>
+                            <td>Investing premiums</td>
+                            <td>10-25%</td>
+                            <td>Slow. Regulatory constraints.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 13: The Intermediaries -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Critical for Osmosis</div>
+                <h2 class="section-header">The Intermediaries</h2>
+
+                <div class="card-grid">
+                    <div class="info-card" style="border-color: var(--color-secondary);">
+                        <h3>📋 Consultants</h3>
+                        <p style="margin-bottom: 12px;">Advise LPs on manager selection. Conduct due diligence. Write recommendations. <strong>Many pensions won't invest without consultant approval.</strong></p>
+                        <p style="font-size: 14px; color: var(--ink-500);"><strong>Key players:</strong> Cambridge Associates, Mercer, Aon, Wilshire, Aksia, Albourne</p>
+                        <div style="margin-top: 12px; padding: 12px; background: #FEF3C7; border-radius: 8px;">
+                            <p style="font-size: 13px; color: var(--warning-orange);"><strong>Why they matter:</strong> Gatekeepers. A negative consultant view can kill a fundraise. They speak publicly—<em>prime Osmosis content.</em></p>
+                        </div>
+                    </div>
+
+                    <div class="info-card" style="border-color: var(--color-secondary);">
+                        <h3>🎯 OCIOs (Outsourced CIO)</h3>
+                        <p style="margin-bottom: 12px;">Go beyond consulting—actually <em>manage</em> the LP's portfolio. Full discretion to hire/fire managers.</p>
+                        <p style="font-size: 14px; color: var(--ink-500);"><strong>Key players:</strong> Cambridge, Mercer/Aon OCIO, Commonfund, Investure, TIFF</p>
+                        <div style="margin-top: 12px; padding: 12px; background: #FEF3C7; border-radius: 8px;">
+                            <p style="font-size: 13px; color: var(--warning-orange);"><strong>Why they matter:</strong> One OCIO relationship = access to dozens of underlying LPs. They consolidate allocator power.</p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>🤝 Placement Agents</h3>
+                        <p style="margin-bottom: 12px;">Help GPs raise capital. Essentially investment banks for fundraising. Introductions, roadshow logistics. Take 1-2% of capital raised.</p>
+                        <p style="font-size: 14px; color: var(--ink-500);"><strong>Key players:</strong> Park Hill, Evercore, Lazard, Campbell Lutyens, Eaton Partners</p>
+                        <p style="margin-top: 12px; font-size: 13px; color: var(--ink-500);">Used by first-time funds, new geographies, or when GP lacks IR capacity.</p>
+                    </div>
+                </div>
+
+                <div class="osmosis-highlight" style="margin-top: 30px;">
+                    <h3>Consultants Are Gatekeepers</h3>
+                    <p>Getting on the Cambridge or Mercer approved list is a huge deal for GPs. Consultants see everything—which GPs are raising, which LPs are allocating, where flows are going. GPs spend enormous energy cultivating these relationships.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Other Ecosystem Players -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">The Full Picture</div>
+                <h2 class="section-header">Other Ecosystem Players</h2>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>What They Do</th>
+                            <th>Key Names</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Fund Administrators</strong></td>
+                            <td>Back-office: NAV calc, investor reporting, compliance</td>
+                            <td>Citco, SS&C, Apex, Alter Domus</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Prime Brokers</strong></td>
+                            <td>Serve hedge funds: leverage, securities lending, execution</td>
+                            <td>Goldman, Morgan Stanley, JPM</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Custodians</strong></td>
+                            <td>Hold assets, settlement</td>
+                            <td>State Street, BNY Mellon, Northern Trust</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Law Firms (GP-side)</strong></td>
+                            <td>Fund formation, deal docs</td>
+                            <td>Kirkland, Simpson Thacher, Ropes & Gray, Sidley</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Law Firms (LP-side)</strong></td>
+                            <td>Negotiate fund terms, side letters</td>
+                            <td>Same firms, different teams</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Data Providers</strong></td>
+                            <td>Performance data, fund info</td>
+                            <td>Preqin, PitchBook, Burgiss, Cambridge Benchmarks</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Industry Associations</strong></td>
+                            <td>Standards, advocacy, events</td>
+                            <td>ILPA (LP-focused), AIC, MFA</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="callout" style="margin-top: 30px;">
+                    <div class="callout-title">Ecosystem Insight</div>
+                    <p>Many of these players host events where allocators and managers speak. Conferences from ILPA, industry associations, and data providers are all sources of spoken content that Osmosis can capture.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: The Fundraising Process -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">How It Works</div>
+                <h2 class="section-header">The Closed-End Fundraising Process</h2>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-title">Phase 1: Pre-Marketing (6-12 months before)</div>
+                        <div class="timeline-content">
+                            Informal conversations with existing LPs. "Would you have appetite for Fund IV?" Gauge demand, refine strategy. Build pipeline.
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-title">Phase 2: Fund Launch</div>
+                        <div class="timeline-content">
+                            PPM issued. Marketing deck finalized. DDQ ready. Data room set up. Officially "in market."
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-title">Phase 3: Active Marketing (6-18 months)</div>
+                        <div class="timeline-content">
+                            <strong>Intense period.</strong> Roadshows, conferences, LP meetings. IR and Sales slammed. Consultant presentations. Existing LP re-ups. <span style="color: var(--color-accent); font-weight: 600;">High need for Osmosis intel.</span>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-title">Phase 4: First Close</div>
+                        <div class="timeline-content">
+                            50-70% of target committed. Triggers management fee clock. Sends market signal.
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-title">Phase 5: Final Close</div>
+                        <div class="timeline-content">
+                            Hard deadline for commitments. Fund "closed" — no new LPs. GP shifts to deployment. 12-24 months after launch.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: Distribution Channels -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Go-to-Market</div>
+                <h2 class="section-header">Distribution Channels</h2>
+
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>🎯 Direct / Institutional</h3>
+                        <p>GP's IR team calls on LPs directly. Relationship-driven. Largest check sizes ($50M-$500M+). Longest diligence (6-18 months).</p>
+                        <p style="margin-top: 12px; font-style: italic; color: var(--ink-500);">Most important for established managers.</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>📋 Consultant-Intermediated</h3>
+                        <p>GP presents to consultants. If approved, consultants recommend to their LP clients. Can take 6-12 months just to get on approved list.</p>
+                        <p style="margin-top: 12px; font-style: italic; color: var(--ink-500);">Huge leverage: one recommendation = multiple allocations.</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>🤝 Placement Agent-Assisted</h3>
+                        <p>GP hires agent to make introductions, run process. Fee: 1-2% of capital raised. Good for first-time managers or new geographies.</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>🏦 Wealth / Retail Channel</h3>
+                        <p>Wirehouses (Morgan Stanley, UBS, Merrill), RIAs, private banks. Lower minimums ($25K-$250K). Different products: interval funds, feeder funds.</p>
+                        <p style="margin-top: 12px; font-style: italic; color: var(--color-accent);">Growing fast—platforms investing heavily.</p>
+                    </div>
+                </div>
+
+                <h3 class="section-subheader" style="font-size: 22px; margin-top: 30px;">Fundraise Duration Reality Check</h3>
+                <table class="comparison-table" style="font-size: 14px;">
+                    <thead>
+                        <tr>
+                            <th>Fund Type</th>
+                            <th>Typical Duration</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Flagship PE (established)</td>
+                            <td>6-12 months</td>
+                            <td>Strong brand, existing LPs re-up quickly</td>
+                        </tr>
+                        <tr>
+                            <td>Flagship PE (challenged)</td>
+                            <td>12-24+ months</td>
+                            <td>If recent performance is weak</td>
+                        </tr>
+                        <tr>
+                            <td>First-time fund</td>
+                            <td>18-36 months</td>
+                            <td>No track record, building from scratch</td>
+                        </tr>
+                        <tr>
+                            <td>VC (top-tier)</td>
+                            <td>2-4 weeks</td>
+                            <td>Seriously. Access-constrained.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 17: Evergreen vs Vintage Funds -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Fund Structures</div>
+                <h2 class="section-header">Evergreen vs. Vintage Funds</h2>
+
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="border-color: var(--ink-700);">
+                            <h3>📅 Closed-End / Vintage (Traditional)</h3>
+                            <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 15px;">
+                                <li>Fixed fund life (10-12 years)</li>
+                                <li>Fixed fundraising period (12-24 mo)</li>
+                                <li>Capital "called" over investment period</li>
+                                <li>Capital "distributed" as investments exit</li>
+                                <li>LPs get cash back—can't stay in same fund</li>
+                                <li>GP must raise new fund every 3-5 years</li>
+                                <li>Clear track record by vintage (Fund I, II, III...)</li>
+                            </ul>
+                            <div style="margin-top: 16px; padding: 12px; background: var(--surface-50); border-radius: 8px; font-family: var(--font-mono); font-size: 12px;">
+                                <p style="margin-bottom: 4px;">Year 1-3: Capital calls (money in)</p>
+                                <p style="margin-bottom: 4px;">Year 3-5: J-curve (marked down)</p>
+                                <p style="margin-bottom: 4px;">Year 5-10: Distributions (exits)</p>
+                                <p>Year 10-12: Wind-down</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="border-color: var(--color-accent);">
+                            <h3>♾️ Evergreen / Perpetual Capital</h3>
+                            <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 15px;">
+                                <li>No fixed end date—goes on indefinitely</li>
+                                <li>Continuous fundraising (monthly/quarterly)</li>
+                                <li>Capital stays and is reinvested</li>
+                                <li>LPs can redeem (with restrictions)</li>
+                                <li>NAV-based pricing</li>
+                                <li>No "vintage"—time-weighted returns</li>
+                            </ul>
+                            <div style="margin-top: 16px; padding: 12px; background: #EEF2FF; border-radius: 8px;">
+                                <p style="font-size: 14px; color: var(--ink-700);"><strong>Examples:</strong> BREIT, BCRED (Blackstone), SREIT (Starwood), Brookfield perpetual funds</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="key-insight" style="margin-top: 24px;">
+                    <div class="key-insight-icon">⚠️</div>
+                    <div class="key-insight-content">
+                        <h4>The 2022-2023 Warning</h4>
+                        <p>BREIT and SREIT saw massive redemption requests and hit gates—LPs couldn't get out. "Liquidity" in evergreen alternatives is conditional. Caused significant reputational damage.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: What This Means for Osmosis -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Sales Implications</div>
+                <h2 class="section-header">Fund Type: Osmosis Implications</h2>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Dimension</th>
+                            <th>Closed-End / Vintage</th>
+                            <th>Evergreen / Open-End</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Fundraising pattern</strong></td>
+                            <td>Cyclical, intense bursts</td>
+                            <td>Continuous, steady</td>
+                        </tr>
+                        <tr>
+                            <td><strong>When they need intel</strong></td>
+                            <td>Pre-marketing + active raise</td>
+                            <td>Always</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Urgency</strong></td>
+                            <td>Very high during raise</td>
+                            <td>Moderate, ongoing</td>
+                        </tr>
+                        <tr>
+                            <td><strong>IR team focus</strong></td>
+                            <td>LP re-ups + new LP pursuit</td>
+                            <td>Retention, steady inflows, redemption mgmt</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Competitive dynamics</strong></td>
+                            <td>"Did we beat Fund X to close?"</td>
+                            <td>"Are we winning flows vs. similar products?"</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="two-col" style="margin-top: 30px;">
+                    <div class="callout" style="margin: 0; border-left-color: var(--ink-700);">
+                        <div class="callout-title" style="color: var(--ink-700);">Vintage Fund Managers</div>
+                        <p><strong>Acute pain</strong> during fundraising cycles. Intense need when in market. Great time to sell.</p>
+                    </div>
+                    <div class="callout" style="margin: 0;">
+                        <div class="callout-title">Evergreen Managers</div>
+                        <p><strong>Chronic pain</strong>—always in market, always need to know what allocators think. Steady, ongoing value.</p>
+                    </div>
+                </div>
+
+                <div class="osmosis-highlight" style="margin-top: 30px;">
+                    <h3>Both Are Good Customers</h3>
+                    <p>But the sales motion differs. Vintage funds feel urgent pain at specific moments. Evergreen funds have persistent, ongoing need.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: The Business Model (2 and 20) -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Follow the Money</div>
+                <h2 class="section-header">How Asset Managers Make Money</h2>
+                
+                <p class="body-text-large">
+                    This is the heart of the business model. Understand this and you understand the incentives.
+                </p>
+                
+                <div class="two-col">
+                    <div>
+                        <div class="money-math">
+                            <h4>The "2 and 20" Model</h4>
+                            
+                            <div class="math-row">
+                                <span class="math-label">Management Fee</span>
+                                <span class="math-value">~2% of AUM / year</span>
+                            </div>
+                            <p style="color: var(--ink-700); margin-bottom: 20px; font-size: 15px;">Paid regardless of performance. Covers salaries, operations, overhead.</p>
+                            
+                            <div class="math-divider"></div>
+                            
+                            <div class="math-row">
+                                <span class="math-label">Performance Fee (Carry)</span>
+                                <span class="math-value">~20% of profits</span>
+                            </div>
+                            <p style="color: var(--ink-700); font-size: 15px;">Only paid when returns exceed a benchmark ("hurdle rate"). This is the upside.</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="section-subheader" style="font-size: 24px;">Let's Do the Math</h3>
+                        
+                        <div class="info-card" style="background: white;">
+                            <p><strong>Scenario:</strong> $10B fund with 2% management fee</p>
+                            <div style="margin-top: 16px; font-family: var(--font-mono);">
+                                <p style="margin-bottom: 8px;">$10B × 2% = <strong style="color: var(--money-green);">$200M/year</strong></p>
+                                <p style="font-size: 14px; color: var(--ink-500);">That's $200M in revenue just for managing the money—before any performance.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="key-insight" style="margin-top: 24px;">
+                            <div class="key-insight-icon">🎯</div>
+                            <div class="key-insight-content">
+                                <h4>The Incentive</h4>
+                                <p><strong>More AUM = more management fees.</strong> This is why fundraising matters so much. Every dollar raised is ~2 cents/year in guaranteed revenue.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 7: The Fundraising Machine -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Inside the Firm</div>
+                <h2 class="section-header">The Fundraising Machine</h2>
+                
+                <p class="body-text">
+                    Inside an asset manager, there are dedicated people whose job is to get allocator capital in the door. This is the team Osmosis serves.
+                </p>
+                
+                <div class="card-grid">
+                    <div class="info-card" style="border-color: var(--color-accent);">
+                        <h3>🎤 Investor Relations (IR)</h3>
+                        <p>The "face" of the firm to allocators. They maintain relationships, handle communications, organize annual meetings, and keep existing investors happy.</p>
+                        <p style="margin-top: 12px; font-size: 14px; color: var(--color-accent);"><strong>Osmosis use case:</strong> Prep for allocator meetings, track what their LPs are saying publicly</p>
+                    </div>
+                    
+                    <div class="info-card" style="border-color: var(--color-accent);">
+                        <h3>💰 Capital Formation / Sales</h3>
+                        <p>Hunters. They go out and find new allocator capital. Often have quotas. Travel constantly to conferences and LP meetings.</p>
+                        <p style="margin-top: 12px; font-size: 14px; color: var(--color-accent);"><strong>Osmosis use case:</strong> Find new allocators shifting into their strategy, competitive intel</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>📊 Marketing / Product</h3>
+                        <p>Create the materials—pitch decks, DDQs, fact sheets. Craft the narrative. Work closely with IR and Sales.</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>⚙️ COO / Operations</h3>
+                        <p>Make sure the fundraising machine runs smoothly. Care about efficiency, headcount, and process.</p>
+                    </div>
+                </div>
+                
+                <div class="osmosis-highlight">
+                    <h3>This Is Our Beachhead</h3>
+                    <p>IR and Capital Formation teams live and die by their relationships with allocators. They need to know what allocators are thinking, where capital is flowing, and what the competition is doing. We give them eyes and ears on the spoken conversations they can't attend.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 8: The Fundraising Cycle -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">The Rhythm</div>
+                <h2 class="section-header">The Fundraising Cycle</h2>
+                
+                <p class="body-text">
+                    Fundraising isn't constant—it happens in cycles, especially for private funds. Understanding this rhythm helps us time our outreach.
+                </p>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-title">Fund Launch (Year 0)</div>
+                        <div class="timeline-content">
+                            GP announces new fund. Target size set. Marketing materials prepared. The fundraise begins.
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-title">Active Fundraising (Year 0-2)</div>
+                        <div class="timeline-content">
+                            Intense period. Roadshows, conferences, LP meetings. IR and Sales are slammed. <strong>High need for Osmosis intel.</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-title">First/Final Close (Year 1-2)</div>
+                        <div class="timeline-content">
+                            Fund hits targets (or doesn't). Attention shifts to deployment. Fundraising pressure drops temporarily.
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-title">Investment Period (Year 2-5)</div>
+                        <div class="timeline-content">
+                            Capital gets deployed. GP focuses on deals. But IR still maintains LP relationships, reports on progress.
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-title">Pre-Marketing Next Fund (Year 4-5)</div>
+                        <div class="timeline-content">
+                            Before current fund is done, GP starts warming up LPs for the next one. Cycle repeats. <strong>Another high-need moment.</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="callout">
+                    <div class="callout-title">Timing Insight</div>
+                    <p>Funds in active fundraise or pre-marketing mode are our hottest prospects. They feel the pain most acutely.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 9: What Allocators Care About -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">The LP Perspective</div>
+                <h2 class="section-header">What Allocators Care About</h2>
+                
+                <p class="body-text">
+                    To sell to asset managers, we need to understand what their customers (allocators) actually care about. This is what drives allocator decisions:
+                </p>
+                
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 20px;">
+                            <h3>📈 Returns (Obviously)</h3>
+                            <p>But not just raw returns—<em>risk-adjusted</em> returns. How much risk did you take to get that performance? Consistency matters.</p>
+                        </div>
+                        
+                        <div class="info-card" style="margin-bottom: 20px;">
+                            <h3>🤝 Alignment of Interests</h3>
+                            <p>Does the GP have skin in the game? Are the fee structures fair? Will they do right by LPs when things get hard?</p>
+                        </div>
+                        
+                        <div class="info-card">
+                            <h3>🔍 Transparency</h3>
+                            <p>Can I understand what you're doing with my money? Will you communicate clearly and frequently?</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="info-card" style="margin-bottom: 20px;">
+                            <h3>👥 Team Stability</h3>
+                            <p>Has the team worked together? Are key people likely to leave? Allocators invest in people.</p>
+                        </div>
+                        
+                        <div class="info-card" style="margin-bottom: 20px;">
+                            <h3>🌱 ESG & Impact</h3>
+                            <p>Increasingly important. Does this fund align with our values and mandates? Can we defend this investment to our stakeholders?</p>
+                        </div>
+                        
+                        <div class="info-card">
+                            <h3>📦 Capacity</h3>
+                            <p>Is the fund too big? Will my capital actually move the needle, or will I be a tiny LP with no relationship?</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="key-insight">
+                    <div class="key-insight-icon">🎧</div>
+                    <div class="key-insight-content">
+                        <h4>This Is Exactly What Osmosis Captures</h4>
+                        <p>When allocators speak at conferences, they're signaling priorities—"we're increasing private credit exposure," "we care deeply about GP alignment," "we're avoiding managers with turnover." Asset managers need to hear this to position themselves.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 10: Where Osmosis Fits -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Bringing It Together</div>
+                <h2 class="section-header">Where Osmosis Fits</h2>
+                
+                <div class="flow-container">
+                    <div class="flow-box">
+                        <div class="flow-box-icon">🎤</div>
+                        <div class="flow-box-title">Allocators Speak</div>
+                        <div class="flow-box-subtitle">Conferences, interviews,<br>regulatory hearings, panels</div>
+                    </div>
+                    
+                    <div>
+                        <div class="flow-arrow">→</div>
+                        <span class="flow-arrow-label">Osmosis captures</span>
+                    </div>
+                    
+                    <div class="flow-box highlight" style="border-color: var(--color-secondary);">
+                        <div class="flow-box-icon">🧠</div>
+                        <div class="flow-box-title">Osmosis Analyzes</div>
+                        <div class="flow-box-subtitle">Transcription, synthesis,<br>alerts, intelligence</div>
+                    </div>
+                    
+                    <div>
+                        <div class="flow-arrow">→</div>
+                        <span class="flow-arrow-label">delivers to</span>
+                    </div>
+                    
+                    <div class="flow-box money">
+                        <div class="flow-box-icon">💰</div>
+                        <div class="flow-box-title">Asset Managers Win</div>
+                        <div class="flow-box-subtitle">Better meetings, faster closes,<br>competitive edge</div>
+                    </div>
+                </div>
+                
+                <div class="osmosis-highlight" style="text-align: left;">
+                    <h3 style="margin-bottom: 24px;">The Value Prop in One Sentence</h3>
+                    <p style="font-size: 22px; opacity: 1; max-width: none;">
+                        "We help you know what allocators are thinking and saying—so you can raise capital faster and smarter."
+                    </p>
+                </div>
+                
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>🔔 Real-Time Alerts</h3>
+                        <p>Know immediately when a target allocator speaks publicly about your strategy or a competitor.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>📋 Meeting Prep</h3>
+                        <p>Go into every LP meeting knowing exactly what they've said publicly about their priorities.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>📊 Competitive Intel</h3>
+                        <p>Understand how allocators talk about your competitors—and position against them.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 11: Key Terms Glossary -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Reference</div>
+                <h2 class="section-header">Key Terms to Know</h2>
+                
+                <p class="body-text">Bookmark this. You'll hear these constantly.</p>
+                
+                <div class="two-col">
+                    <div>
+                        <table class="comparison-table">
+                            <tbody>
+                                <tr>
+                                    <td><strong>AUM</strong></td>
+                                    <td>Assets Under Management. Total capital a fund manages.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>LP</strong></td>
+                                    <td>Limited Partner. The allocator/investor in a fund.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>GP</strong></td>
+                                    <td>General Partner. The fund manager who invests LP capital.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>IR</strong></td>
+                                    <td>Investor Relations. Team managing LP relationships.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DDQ</strong></td>
+                                    <td>Due Diligence Questionnaire. Standard LP intake form.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Dry Powder</strong></td>
+                                    <td>Capital raised but not yet invested.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <table class="comparison-table">
+                            <tbody>
+                                <tr>
+                                    <td><strong>Carry</strong></td>
+                                    <td>Performance fee (typically 20% of profits).</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Hurdle Rate</strong></td>
+                                    <td>Minimum return before carry kicks in.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Vintage</strong></td>
+                                    <td>The year a fund started investing.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>First Close</strong></td>
+                                    <td>Initial capital commitment that starts a fund.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Final Close</strong></td>
+                                    <td>Deadline for LP commitments; fundraise ends.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Allocation</strong></td>
+                                    <td>How an LP divides capital across strategies.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 12: Test Your Understanding -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Check Yourself</div>
+                <h2 class="section-header">Quick Comprehension Check</h2>
+                
+                <div class="quiz-section">
+                    <div class="quiz-question">If a fund has $5B AUM with a 2% management fee, what's their annual management fee revenue?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">$10 million</div>
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">$50 million</div>
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">$100 million ✓</div>
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">$500 million</div>
+                    </div>
+                </div>
+                
+                <div class="quiz-section">
+                    <div class="quiz-question">Who is the "LP" in a private equity fund relationship?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">The fund manager making investment decisions</div>
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">The allocator providing capital to the fund ✓</div>
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">The companies the fund invests in</div>
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">The IR team at the fund</div>
+                    </div>
+                </div>
+                
+                <div class="quiz-section">
+                    <div class="quiz-question">When is an asset manager MOST likely to feel the need for Osmosis?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">Right after they close a successful fund</div>
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">During active fundraising or pre-marketing ✓</div>
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">When they're fully deployed with no dry powder</div>
+                        <div class="quiz-option" onclick="this.classList.toggle('selected')">When all their LPs have re-committed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 13: Summary -->
+        <div class="slide">
+            <div class="slide-content" style="text-align: center;">
+                <div class="section-pill">Wrap Up</div>
+                <h2 class="section-header">The Story in 30 Seconds</h2>
+                
+                <div style="max-width: 800px; margin: 0 auto; text-align: left;">
+                    <p class="body-text-large" style="margin-bottom: 32px;">
+                        <strong>Allocators</strong> (pensions, endowments, SWFs) have billions to invest. They give that capital to <strong>asset managers</strong> (PE, VC, hedge funds, credit) who invest it and charge fees.
+                    </p>
+                    
+                    <p class="body-text-large" style="margin-bottom: 32px;">
+                        Asset managers make money primarily through <strong>management fees</strong> (~2% of AUM). More capital raised = more revenue. So fundraising is existential.
+                    </p>
+                    
+                    <p class="body-text-large" style="margin-bottom: 32px;">
+                        The <strong>IR and Capital Formation</strong> teams are responsible for bringing in allocator capital. They need every edge they can get.
+                    </p>
+                    
+                    <p class="body-text-large">
+                        <strong>Osmosis</strong> gives them that edge—intelligence on what allocators are thinking, saying, and prioritizing, captured from public spoken content they'd otherwise miss.
+                    </p>
+                </div>
+                
+                <div style="margin-top: 60px;">
+                    <div class="section-pill" style="background: var(--brand-gradient); color: white; border: none;">Now you get it. Go sell. 🚀</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav-controls">
+            <button class="nav-btn" onclick="previousSlide()" id="prevBtn">← Previous</button>
+            <div class="slide-indicator">
+                <span id="currentSlide">1</span> / <span id="totalSlides">13</span>
+            </div>
+            <button class="nav-btn" onclick="nextSlide()" id="nextBtn">Next →</button>
+        </div>
+    </div>
+    
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('totalSlides').textContent = totalSlides;
+        
+        function showSlide(index) {
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            if (index >= 0 && index < totalSlides) {
+                slides[index].classList.add('active');
+                slides[index].scrollTop = 0;
+                currentSlideIndex = index;
+                document.getElementById('currentSlide').textContent = index + 1;
+                
+                document.getElementById('prevBtn').disabled = index === 0;
+                document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+        
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            } else if (e.key >= '1' && e.key <= '9') {
+                const slideNum = parseInt(e.key);
+                if (slideNum <= totalSlides) {
+                    showSlide(slideNum - 1);
+                }
+            }
+        });
+        
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capital Markets Deep Dive: The Context Behind the Questions</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Sans+Condensed:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+        
+        :root {
+            --radius: 0.625rem;
+            --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+            --font-mono: "IBM Plex Mono", monospace;
+            --font-heading: "IBM Plex Sans Condensed", system-ui, sans-serif;
+            
+            --color-primary: #0a0a0a;
+            --color-secondary: rgb(248, 97, 60);
+            --color-accent: rgb(42, 96, 248);
+            --color-background: white;
+            --color-foreground: #0a0a0a;
+            
+            --surface-50: #F9FAFB;
+            --border-100: #ECEFF3;
+            --ink-900: #0F1226;
+            --ink-700: #30364D;
+            --ink-500: #5A6178;
+            --brand-primary-600: #3B43F2;
+            --brand-gradient: linear-gradient(90deg, #1A2FFB 0%, #44B0FF 100%);
+            --money-green: #1C8A49;
+            --money-green-light: #E9F7EF;
+            --warning-orange: #D97706;
+            --warning-orange-light: #FEF3C7;
+            --shadow-elev-2: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+            --shadow-elev-3: 0 1px 3px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            color: var(--color-foreground);
+            background: var(--color-background);
+            overflow-x: hidden;
+        }
+        
+        .presentation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease;
+            padding: 80px 60px 140px;
+            overflow-y: auto;
+        }
+        
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* Navigation */
+        .nav-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-elev-3);
+        }
+        
+        .nav-btn {
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-family: var(--font-mono);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-btn:hover {
+            background: #1D054F;
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .slide-indicator {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Typography */
+        .hero-headline {
+            font-family: var(--font-heading);
+            font-size: 70px;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin-bottom: 30px;
+            font-weight: 300;
+            color: var(--ink-900);
+        }
+        
+        .hero-headline-bold {
+            font-weight: 600;
+            color: var(--color-accent);
+        }
+        
+        .section-header {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            font-size: 52px;
+            line-height: 110%;
+            letter-spacing: -0.04em;
+            color: #1D054F;
+            margin-bottom: 40px;
+        }
+        
+        .section-subheader {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            font-size: 32px;
+            line-height: 110%;
+            letter-spacing: -0.03em;
+            color: #1D054F;
+            margin-bottom: 24px;
+        }
+        
+        .section-pill {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 12px;
+            line-height: 20px;
+            color: var(--color-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 24px;
+            display: inline-block;
+            padding: 6px 12px;
+            border: 1px solid var(--color-secondary);
+            border-radius: 20px;
+        }
+        
+        .body-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--ink-700);
+            margin-bottom: 20px;
+        }
+        
+        .body-text-large {
+            font-size: 22px;
+            line-height: 1.7;
+            color: var(--ink-700);
+            margin-bottom: 24px;
+        }
+        
+        /* Cards and Grids */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 32px 0;
+        }
+        
+        .info-card {
+            background: var(--surface-50);
+            border: 1px solid var(--border-100);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .info-card:hover {
+            box-shadow: var(--shadow-elev-2);
+            transform: translateY(-2px);
+        }
+        
+        .info-card h3 {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ink-900);
+            margin-bottom: 12px;
+        }
+        
+        .info-card p {
+            color: var(--ink-700);
+            line-height: 1.6;
+        }
+        
+        /* Callout Boxes */
+        .callout {
+            background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+            border-left: 4px solid var(--color-accent);
+            border-radius: 0 12px 12px 0;
+            padding: 24px 28px;
+            margin: 30px 0;
+        }
+        
+        .callout-title {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--color-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+        
+        .callout p {
+            color: var(--ink-700);
+            font-size: 17px;
+            line-height: 1.6;
+        }
+        
+        /* Two Column Layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+        
+        @media (max-width: 900px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="slide-content" style="text-align: center;">
+                <div class="section-pill">Sales Enablement Primer</div>
+                <h1 class="hero-headline">
+                    Capital Markets Deep Dive<br>
+                    <span class="hero-headline-bold">The Context Behind the Questions</span>
+                </h1>
+                <p class="body-text-large" style="max-width: 720px; margin: 30px auto;">
+                    Asking questions in sales calls is a great way of establishing credibilty.  We want to build peer-level conversations by knowing the why behind every question, the market dynamics shaping answers, and exactly where Osmosis fits.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Slide 2: Introduction -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Introduction</div>
+                <h2 class="section-header">The Goal</h2>
+                <p class="body-text-large">
+                    You're not selling software to IR heads, Capital Formation leads, or COOs—you are proving you understand their world, pressures, and language.
+                </p>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Genuine Curiosity</h3>
+                        <p>These questions are not a script; they show you care how their business actually works.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Context = Credibility</h3>
+                        <p>Knowing the market dynamics behind an answer is what makes you sound like a peer.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Osmosis Angle</h3>
+                        <p>We capture the spoken signals that reveal allocator priorities—turning conversations into actionable intelligence.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Questions Up Front -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Start Here</div>
+                <h2 class="section-header">The Questions Up Front</h2>
+                <p class="body-text-large">These questions (h/t Lindsay Lee) are a great way to establish our credibilty: system-level thinking, liquidity flows, asset-class pressures, buyer intent, LP segmentation, and competitive threats.</p>
+                <div class="callout">
+                    <div class="callout-title">How to Use</div>
+                    <p>Lead with these to sound like a peer, not a vendor. They show macro fluency, respect for their constraints, and curiosity about how they actually operate.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Asset-Class & Liquidity Flow Questions -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">A. Asset-Class & Liquidity Flow</div>
+                <h2 class="section-header">Signals You Get the Macro</h2>
+                <ul class="body-text" style="margin-left: 20px;">
+                    <li><strong>“Where do you see liquidity actually flowing right now across your LP base? Which asset classes feel capital-starved vs. capital-flush?”</strong> — Macro fluency; liquidity is the north star.</li>
+                    <li><strong>“How much of your recent LP demand is tied to the AI infrastructure buildout — data centers, power, connectivity, digital infra?”</strong> — Shows you’re current on infra enthusiasm.</li>
+                    <li><strong>“In private credit, where do you see spreads and structures trending for the types of borrowers your team targets?”</strong> — Signals you see private credit as an equity substitute.</li>
+                    <li><strong>“What are the biggest risks you think LPs are underestimating in private credit right now?”</strong> — Invites candor; aligns with the ‘flawed’ private credit take.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 5: Fundraising Pressure & Competition Questions -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">B. Fundraising Pressure & Competition</div>
+                <h2 class="section-header">Crowded Market Reality</h2>
+                <ul class="body-text" style="margin-left: 20px;">
+                    <li><strong>“Where do you feel competitive pressure rising most — other GPs, consultants, or newer platforms entering your lane?”</strong></li>
+                    <li><strong>“How predictable is your LP pacing today? Is timing the bottleneck, or access, or internal bandwidth on your team?”</strong> — Direct tee-up for Osmosis as the allocator radar.</li>
+                    <li><strong>“Do you feel like your team learns about LP mandates early enough — or do you sometimes feel late to the table?”</strong> — The wedge question.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 6: Workflow & Efficiency Questions -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">C. Team Workflow & Efficiency</div>
+                <h2 class="section-header">Where Osmosis Lives</h2>
+                <ul class="body-text" style="margin-left: 20px;">
+                    <li><strong>“If your associates had 5–10 hours a week back, where would you want that time redeployed?”</strong> — Concrete ROI.</li>
+                    <li><strong>“Which parts of pre-meeting prep still feel the most manual or fragmented?”</strong> — Sets up briefing automation.</li>
+                    <li><strong>“How are you currently prioritizing meetings for partners on the road? What’s working — and what’s noisy?”</strong> — Signal vs. noise.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 7: LP Segmentation Questions -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">D. LP Segmentation & Expansion</div>
+                <h2 class="section-header">Know Their Customer Shapes</h2>
+                <ul class="body-text" style="margin-left: 20px;">
+                    <li><strong>“Which LP types have been the hardest to grow with — sovereigns, insurers, European pensions, U.S. publics?”</strong></li>
+                    <li><strong>“Is most of your growth coming from deepening existing LPs, or are you feeling pressure to find net-new relationships?”</strong> — Founders should ask this.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 8: Bonus Insider Questions -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Bonus</div>
+                <h2 class="section-header">Questions That Make You an Insider</h2>
+                <p class="body-text">Use when the conversation is warm; these show deep context.</p>
+                <ul class="body-text" style="margin-left: 20px;">
+                    <li><strong>Consultant dynamics:</strong> “How much of your LP pipeline is consultant-driven vs. direct relationships right now? And is that shifting?”</li>
+                    <li><strong>SMA / bespoke:</strong> “As you expand into bespoke solutions and SMAs, how do you identify which LPs are good fits vs. those who prefer commingled structures?”</li>
+                    <li><strong>Global vs. domestic:</strong> “Are you seeing non-U.S. LPs move faster or slower than U.S. publics in the current rate environment?”</li>
+                    <li><strong>Internal bandwidth:</strong> “Which internal teams feel the most bandwidth pressure during busy fundraising cycles — partners, VP/Associate layer, or product/strategy?”</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 9: Pocket List -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">🧩 Pocket List</div>
+                <h2 class="section-header">Tight 5 (Plus One) to Memorize</h2>
+                <ul class="body-text" style="margin-left: 20px;">
+                    <li><strong>Liquidity:</strong> “Where is liquidity actually flowing across your LP base right now?”</li>
+                    <li><strong>Pressure:</strong> “What parts of fundraising feel most competitive or unpredictable for you today?”</li>
+                    <li><strong>Time Sink:</strong> “Where do your associates lose the most time?”</li>
+                    <li><strong>LP Mix:</strong> “Which LP types are growing fastest for you — and which are hardest to penetrate?”</li>
+                    <li><strong>Automation:</strong> “When you think about future-proofing your team, what workflows would you automate first?”</li>
+                    <li><strong>Bonus:</strong> “How much of your LP pipeline is consultant-driven vs. direct relationships right now? And is that shifting?”</li>
+                </ul>
+                <div class="callout">
+                    <div class="callout-title">Why It Works</div>
+                    <p>These five (plus one) alone make you sound like a peer, not a vendor.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 10: Part One Intro -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Part One</div>
+                <h2 class="section-header">Asset-Class & Liquidity Flow</h2>
+                <p class="body-text-large"><strong>Why this matters:</strong> Liquidity is the north star. Capital flows dictate who is thriving vs. struggling—and how intense the competition feels.</p>
+                <div class="callout">
+                    <div class="callout-title">Mental Model</div>
+                    <p>Capital is a river. Sources (LPs) → channels (GPs, consultants, platforms) → destinations (companies, assets, deals). Know where it's rushing vs. drying up.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 4: Liquidity Landscape -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Late 2024 / Early 2025</div>
+                <h2 class="section-header">The Current Liquidity Landscape</h2>
+                <div class="two-col">
+                    <div class="callout" style="margin:0;">
+                        <div class="callout-title">Flowing To</div>
+                        <p><strong>Private Credit, Infrastructure (digital/AI), Secondaries.</strong> Yield, stability, and liquidity solutions are winning.</p>
+                    </div>
+                    <div class="callout" style="margin:0; border-left-color: var(--warning-orange);">
+                        <div class="callout-title" style="color: var(--warning-orange);">Flowing Slowly</div>
+                        <p><strong>Venture (except AI), Traditional Buyout (slower), Real Estate (select pockets).</strong> Distributions and pacing are bottlenecks.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 5: Private Credit -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Hot Capital</div>
+                <h2 class="section-header">Private Credit — The Darling</h2>
+                <div class="two-col">
+                    <div>
+                        <p class="body-text">Banks pulled back post-2022; direct lenders filled the gap. AUM has exploded (~$1.5T+), with LPs chasing floating-rate yield and quarterly cash flows.</p>
+                        <ul class="body-text" style="margin-left: 20px; margin-bottom: 20px;">
+                            <li>Perceived equity-like returns with debt-like risk</li>
+                            <li>Spreads compressing; competition rising</li>
+                            <li>Credit quality questions and liquidity mismatch worries</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="callout" style="margin:0;">
+                            <div class="callout-title">Conversation Signals</div>
+                            <p><strong>Ask:</strong> where spreads and structures are trending. Shows you know the squeeze.</p>
+                            <p><strong>Implication:</strong> Managers need differentiation; Osmosis surfaces LP preferences and risk concerns.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 6: Infrastructure -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Hot Capital</div>
+                <h2 class="section-header">Infrastructure — Institutional Favorite</h2>
+                <p class="body-text">AI and energy transition are driving demand for data centers, power, and connectivity. Long-duration, inflation-linked cash flows keep LPs leaning in.</p>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Why LPs Love It</h3>
+                        <p>Stable cash flows, inflation protection, tangible assets, ESG/impact angle.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Where the Heat Is</h3>
+                        <p>Digital infra (data centers, fiber, towers) outpacing traditional projects.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Conversation Angle</h3>
+                        <p>Ask how much demand is tied to AI infra. Shows currency and opens LP allocation talk.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 7: Secondaries -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Hot Capital</div>
+                <h2 class="section-header">Secondaries — The Liquidity Release Valve</h2>
+                <p class="body-text">LPs over-allocated and short on distributions need cash. Secondaries funds buy stakes (often at discounts) and GP-led continuation vehicles extend winners.</p>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>Why It's Hot</h3>
+                        <p>Liquidity in an illiquid asset class, seasoned portfolios past the J-curve, discounts to NAV create margin of safety.</p>
+                    </div>
+                    <div class="callout" style="margin:0;">
+                        <div class="callout-title">Conversation Signals</div>
+                        <p>Ask who is looking to sell and which GPs are exploring GP-leds. Osmosis helps surface both.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 8: Venture Hangover -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Capital Headwinds</div>
+                <h2 class="section-header">Venture — The Hangover</h2>
+                <p class="body-text">Post-2021 bubble, portfolios marked down, exits scarce, LPs over-allocated. Only top-tier and AI-focused funds are raising smoothly.</p>
+                <div class="callout">
+                    <div class="callout-title">Conversation Signals</div>
+                    <p>Outside the top tier, managers are scrambling for receptive LPs. Position Osmosis as the map of scarce VC appetite.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 9: Buyout PE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Capital Headwinds</div>
+                <h2 class="section-header">Traditional Buyout PE — Mixed</h2>
+                <p class="body-text">Mega-funds still raise, but timelines stretch. Distributions are down; LP pacing slows; denominator effect bites. First-time funds face headwinds.</p>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Pressure Points</h3>
+                        <p>Longer fundraises, more selectivity, fewer automatic re-ups.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Conversation Angle</h3>
+                        <p>Timing matters. Knowing who is allocating now is edge—prime Osmosis use case.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 10: Real Estate -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Capital Headwinds</div>
+                <h2 class="section-header">Real Estate — In Purgatory</h2>
+                <p class="body-text">Rate shock, office pain, BREIT/SREIT redemption issues. Volumes down; LPs cautious and waiting for price discovery.</p>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Bright Spots</h3>
+                        <p>Industrial/logistics, data centers, multifamily, distressed/opportunistic plays.</p>
+                    </div>
+                    <div class="callout" style="margin:0;">
+                        <div class="callout-title">Conversation Signals</div>
+                        <p>LPs here are contrarian. Sector-specific positioning matters. Osmosis surfaces who is leaning in vs. out.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 11: Asset Flow Summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Summary</div>
+                <h2 class="section-header">Liquidity Flow Takeaways</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>Flowing To</h3>
+                        <p>Private Credit, Infrastructure (digital/AI), Secondaries.</p>
+                        <p style="margin-top:8px; color: var(--ink-500);">Competition rising—differentiation required.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Flowing Away</h3>
+                        <p>Venture (except AI), Buyout (slower), Real Estate (selective).</p>
+                        <p style="margin-top:8px; color: var(--ink-500);">Scarcity of receptive LPs—targeting is everything.</p>
+                    </div>
+                </div>
+                <div class="callout">
+                    <div class="callout-title">Osmosis Fit</div>
+                    <p>Differentiate where flows are hot; find rare pockets of appetite where flows are cold. Real-time allocator signals power both.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 12: Part Two Intro -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Part Two</div>
+                <h2 class="section-header">Fundraising Pressure & Competition</h2>
+                <p class="body-text-large">The market flipped: from seller's market to buyer's market. LPs have leverage, take longer, ask harder questions.</p>
+                <div class="callout">
+                    <div class="callout-title">Why It Matters</div>
+                    <p>Empathy + positioning. Understand their stress to avoid tone-deaf pitches and highlight Osmosis as relief.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 13: Competitive Landscape -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Competition</div>
+                <h2 class="section-header">More GPs, Same LP Dollars</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>GP Explosion</h3>
+                        <p>~15,000 PE firms globally (5k in 2010). More GPs chasing limited allocation growth.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Longer Fundraises</h3>
+                        <p>12-24 months is normal; re-ups not automatic; first-time funds face brutal odds.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>LP Scrutiny</h3>
+                        <p>Deeper diligence, harder questions, fee pressure, co-invest rights—bar is higher.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 14: Distribution & Denominator -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Pacing Pain</div>
+                <h2 class="section-header">The Distribution Problem</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>Denominator Effect</h3>
+                        <p>Private valuations held while publics fell—LPs look over-allocated on paper.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Distribution Drought</h3>
+                        <p>No IPOs, muted M&A → LPs lack cash to re-commit. Pacing models break; commitments pause.</p>
+                    </div>
+                </div>
+                <div class="callout">
+                    <div class="callout-title">Implication</div>
+                    <p>Timing is everything. LP readiness is volatile—knowing when they can move is critical.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 15: Where Competition Comes From -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Competitive Set</div>
+                <h2 class="section-header">Competition Vectors</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Other GPs</h3>
+                        <p>Strategy convergence: “everyone is a credit manager now.” Crowded lanes require sharper positioning.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Consultants / OCIO</h3>
+                        <p>Gatekeepers control access. Approved lists and recommendations can make or break a raise.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Platforms</h3>
+                        <p>Multi-strat giants cross-sell LPs and bring brand leverage. Mid-market feels squeezed.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Wealth Channel</h3>
+                        <p>New pool but product/marketing heavy. First-mover advantages (BREIT/BCRED) loom large.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 16: LP Decision Model -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">LP Behavior Shift</div>
+                <h2 class="section-header">Decision-Making: Old vs. New</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>Old Model</h3>
+                        <p>Strong track record = easy re-raise. Re-ups automatic. Consultants quick to approve. 6-12 month cycles.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>New Reality</h3>
+                        <p>Every commitment scrutinized. Longer IC cycles. More asks: co-invest, fee breaks, transparency. 12-24+ months is normal.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 20: Part Two Summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Summary</div>
+                <h2 class="section-header">Fundraising Pressure Takeaways</h2>
+                <ul class="body-text" style="margin-left: 20px;">
+                    <li>Competition is multi-dimensional (GPs, consultants, platforms, wealth).</li>
+                    <li>LP decisions are slower and tougher; timing is volatile.</li>
+                    <li>Differentiation and intelligence edge matter more than ever.</li>
+                </ul>
+                <div class="callout">
+                    <div class="callout-title">Osmosis Fit</div>
+                    <p>We give GPs the informational edge to time outreach, answer harder questions, and stand out in crowded processes.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 21: Part Three Intro -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Part Three</div>
+                <h2 class="section-header">Team Workflow & Operational Efficiency</h2>
+                <p class="body-text-large">Where Osmosis lives day-to-day: reducing manual work so teams can sell better and faster.</p>
+            </div>
+        </div>
+        
+        <!-- Slide 22: Team Structure -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">How Teams Run</div>
+                <h2 class="section-header">IR & Capital Formation Teams</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>Mid-Market Fund ($5-50B)</h3>
+                        <p>Head of IR/Cap Form, 2-4 Directors/VPs, 2-6 Associates/Analysts. Lean teams covering a lot of ground.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Large Platform ($100B+)</h3>
+                        <p>Segmented by geo/strategy/LP type, plus dedicated consultant relations, RFP, and wealth teams. More resources, more complexity.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 23: Work That Fills the Day -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Workload</div>
+                <h2 class="section-header">What Fills the Day</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Pre-Meeting Prep</h3>
+                        <p>LP research, past interactions, news checks, tailoring pitches. 2-4 hours per meeting.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>DDQs / RFPs</h3>
+                        <p>100-300 questions, partial reuse, always bespoke. 10-40 hours each.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>CRM & Tracking</h3>
+                        <p>Meeting notes, priorities, timelines—often incomplete or stuck in heads.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Events & Intel</h3>
+                        <p>Conferences they can't all attend; intel arrives late and anecdotal.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 24: Time Wasters -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Wasted Time</div>
+                <h2 class="section-header">Where Hours Disappear</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Searching for Intel</h3>
+                        <p>Allocator quotes exist but are scattered across video/audio/transcripts.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Reactive vs. Proactive</h3>
+                        <p>Learning mandate shifts after competitors act.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Partner Prioritization</h3>
+                        <p>Gut-feel routing of the scarcest resource: partner time.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Tribal Knowledge</h3>
+                        <p>Insights live in people, not systems. Turnover = lost intelligence.</p>
+                    </div>
+                </div>
+                <div class="callout">
+                    <div class="callout-title">Osmosis Fit</div>
+                    <p>We already captured what CalPERS said at ILPA. Alerts flip reactive to proactive. Prioritization becomes data-driven. Institutional memory becomes searchable.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 25: Workflow Questions -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Questions</div>
+                <h2 class="section-header">Workflow Questions That Land</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>"If associates had 5-10 hours back, where would you deploy it?"</h3>
+                        <p>Quantifies ROI; reveals priority (outreach, prep, competitive analysis, consultant coverage).</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>"Which parts of prep feel most manual?"</h3>
+                        <p>Finding LP commentary? CRM updates? Tailoring? Points to specific Osmosis workflows.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>"How do you prioritize partner meetings—and what's noisy?"</h3>
+                        <p>Exposes signal-to-noise pain; sets up allocator intent signals.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 26: Workflow Summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Summary</div>
+                <h2 class="section-header">Operational Efficiency Takeaways</h2>
+                <ul class="body-text" style="margin-left: 20px;">
+                    <li>Prep and intel gathering are the biggest time sinks.</li>
+                    <li>Teams are reactive because signals arrive late.</li>
+                    <li>Partner time is precious; prioritization is messy.</li>
+                </ul>
+                <div class="callout">
+                    <div class="callout-title">Osmosis Fit</div>
+                    <p>Turn scattered spoken intel into instant, structured briefs. Save hours; redeploy to higher-impact outreach.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 27: Part Four Intro -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Part Four</div>
+                <h2 class="section-header">LP Segmentation & Market Expansion</h2>
+                <p class="body-text-large">LPs are not monolithic. Governance, speed, priorities, and geography change the motion—and the questions.</p>
+            </div>
+        </div>
+        
+        <!-- Slide 28: LP Types -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Segmentation</div>
+                <h2 class="section-header">LP Types at a Glance</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>U.S. Public Pensions</h3>
+                        <p>Board-driven, consultant-dependent, long cycles. Public commentary is abundant.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Corporate Pensions</h3>
+                        <p>More CIO discretion, de-risking trend, faster decisions but shrinking checks.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Endowments & Foundations</h3>
+                        <p>Small, sophisticated teams; relationship-driven; heavy alts; mission alignment matters.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Sovereign Wealth Funds</h3>
+                        <p>Huge checks, geo variance, direct investing ability; relationship access is key.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Insurers</h3>
+                        <p>Regulated, yield/duration focused; private credit sweet spot; longer cycles.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Family Offices</h3>
+                        <p>Fragmented; speed varies; personal relationships drive outcomes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 29: Geography -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Segmentation</div>
+                <h2 class="section-header">Geographic Nuance</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>Where They Are</h3>
+                        <p>U.S. institutional, European pensions/insurers, Middle East SWFs, Asian LPs, Australian Supers.</p>
+                    </div>
+                    <div class="callout" style="margin:0;">
+                        <div class="callout-title">Why It Matters</div>
+                        <p>Currency, regulation, ESG tilt, geopolitical considerations, and speed all vary by region.</p>
+                        <p style="margin-top:8px;">Osmosis captures allocator commentary globally—powerful for expansion conversations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 31: Segmentation Summary -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Summary</div>
+                <h2 class="section-header">Segmentation Takeaways</h2>
+                <ul class="body-text" style="margin-left: 20px;">
+                    <li>LPs differ by governance, speed, priorities, and geography.</li>
+                    <li>Public pensions produce abundant public signals; family offices less so.</li>
+                    <li>Specificity wins: "We know what <em>your</em> LP type is saying" beats generic claims.</li>
+                </ul>
+                <div class="callout">
+                    <div class="callout-title">Osmosis Fit</div>
+                    <p>Segment-specific intelligence makes positioning sharper and outreach smarter.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 37: Part Six Intro -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Part Six</div>
+                <h2 class="section-header">Synthesis — How It Fits Together</h2>
+                <p class="body-text-large">The world is noisier, fundraising is harder, teams are stretched. Spoken allocator signals are the missing piece.</p>
+                <div class="callout">
+                    <div class="callout-title">Osmosis Story</div>
+                    <p>We capture the conversations that matter, synthesize into actionable intelligence, and deliver them in real time so teams act faster and smarter.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 38: Question Framework -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Framework</div>
+                <h2 class="section-header">Why These Questions Work</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Demonstrate Expertise</h3>
+                        <p>Show you know liquidity flows, competitive dynamics, and LP segmentation.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Uncover Pain</h3>
+                        <p>Identify timing, access, bandwidth, and positioning gaps Osmosis can solve.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Build Trust</h3>
+                        <p>Peer-level dialogue beats a pitch script. Questions are curiosity, not interrogation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 40: Final Thought -->
+        <div class="slide">
+            <div class="slide-content" style="text-align: center;">
+                <div class="section-pill">Wrap Up</div>
+                <h2 class="section-header">Final Thought</h2>
+                <p class="body-text-large" style="max-width: 800px; margin: 0 auto 24px;">
+                    These questions are a framework for real conversations. If you know the context—liquidity, competition, operations, LP dynamics—you can improvise, follow threads, and build trust.
+                </p>
+                <div class="callout" style="display:inline-block; text-align:left;">
+                    <div class="callout-title">Need More?</div>
+                    <p>Ask for tailored talk tracks for specific personas (e.g., mid-market PE Head of IR vs. private credit COO).</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav-controls">
+            <button class="nav-btn" onclick="previousSlide()" id="prevBtn">← Previous</button>
+            <div class="slide-indicator">
+                <span id="currentSlide">1</span> / <span id="totalSlides">1</span>
+            </div>
+            <button class="nav-btn" onclick="nextSlide()" id="nextBtn">Next →</button>
+        </div>
+    </div>
+    
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('totalSlides').textContent = totalSlides;
+        
+        function showSlide(index) {
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            if (index >= 0 && index < totalSlides) {
+                slides[index].classList.add('active');
+                slides[index].scrollTop = 0;
+                currentSlideIndex = index;
+                document.getElementById('currentSlide').textContent = index + 1;
+                
+                document.getElementById('prevBtn').disabled = index === 0;
+                document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+        
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            } else if (e.key >= '1' && e.key <= '9') {
+                const slideNum = parseInt(e.key);
+                if (slideNum <= totalSlides) {
+                    showSlide(slideNum - 1);
+                }
+            }
+        });
+        
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
