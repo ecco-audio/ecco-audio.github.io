@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Week in the Life of an Allocator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Sans+Condensed:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+        
+        :root {
+            --radius: 0.625rem;
+            --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+            --font-mono: "IBM Plex Mono", monospace;
+            --font-heading: "IBM Plex Sans Condensed", system-ui, sans-serif;
+            --color-primary: #0a0a0a;
+            --color-secondary: rgb(248, 97, 60);
+            --color-accent: rgb(42, 96, 248);
+            --color-background: white;
+            --color-foreground: #0a0a0a;
+            --surface-50: #F9FAFB;
+            --border-100: #ECEFF3;
+            --ink-900: #0F1226;
+            --ink-700: #30364D;
+            --ink-500: #5A6178;
+            --brand-primary-600: #3B43F2;
+            --brand-gradient: linear-gradient(90deg, #1A2FFB 0%, #44B0FF 100%);
+            --warning-orange: #D97706;
+            --warning-orange-light: #FEF3C7;
+            --shadow-elev-2: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+            --shadow-elev-3: 0 1px 3px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            color: var(--color-foreground);
+            background: var(--color-background);
+            overflow-x: hidden;
+        }
+        
+        .presentation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease;
+            padding: 80px 60px 140px;
+            overflow-y: auto;
+        }
+        
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .nav-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-elev-3);
+        }
+        
+        .nav-btn {
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-family: var(--font-mono);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-btn:hover { background: #1D054F; }
+        
+        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        .slide-indicator {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .hero-headline {
+            font-family: var(--font-heading);
+            font-size: 70px;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin-bottom: 30px;
+            font-weight: 300;
+            color: var(--ink-900);
+        }
+        
+        .hero-headline-bold { font-weight: 600; color: var(--color-accent); }
+        
+        .section-header {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            font-size: 52px;
+            line-height: 110%;
+            letter-spacing: -0.04em;
+            color: #1D054F;
+            margin-bottom: 40px;
+        }
+        
+        .section-pill {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--color-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 24px;
+            display: inline-block;
+            padding: 6px 12px;
+            border: 1px solid var(--color-secondary);
+            border-radius: 20px;
+        }
+        
+        .body-text { font-size: 18px; line-height: 1.6; color: var(--ink-700); margin-bottom: 20px; }
+        .body-text-large { font-size: 22px; line-height: 1.7; color: var(--ink-700); margin-bottom: 24px; }
+        
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin: 40px 0; }
+        .info-card {
+            background: var(--surface-50);
+            border: 1px solid var(--border-100);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.2s ease;
+        }
+        .info-card:hover { box-shadow: var(--shadow-elev-2); transform: translateY(-2px); }
+        .info-card h3 { font-family: var(--font-heading); font-size: 22px; font-weight: 600; color: var(--ink-900); margin-bottom: 12px; }
+        .info-card p { color: var(--ink-700); line-height: 1.6; }
+        
+        .callout {
+            background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+            border-left: 4px solid var(--color-accent);
+            border-radius: 0 12px 12px 0;
+            padding: 24px 28px;
+            margin: 30px 0;
+        }
+        .callout-title { font-family: var(--font-mono); font-weight: 600; font-size: 14px; color: var(--color-accent); letter-spacing: 0.05em; margin-bottom: 12px; }
+        
+        .timeline { position: relative; margin: 40px 0; padding-left: 40px; }
+        .timeline::before { content: ''; position: absolute; left: 12px; top: 0; bottom: 0; width: 2px; background: var(--border-100); }
+        .timeline-item { position: relative; margin-bottom: 32px; }
+        .timeline-item::before { content: ''; position: absolute; left: -34px; top: 6px; width: 16px; height: 16px; background: var(--color-accent); border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 2px var(--color-accent); }
+        .timeline-title { font-family: var(--font-heading); font-size: 20px; font-weight: 600; color: var(--ink-900); margin-bottom: 8px; }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 30px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-elev-2);
+        }
+        .comparison-table th { background: var(--ink-900); color: white; font-family: var(--font-heading); font-weight: 500; padding: 18px 20px; text-align: left; }
+        .comparison-table td { background: white; padding: 18px 20px; border-bottom: 1px solid var(--border-100); color: var(--ink-700); }
+        .comparison-table tr:last-child td { border-bottom: none; }
+        
+        .key-insight {
+            background: var(--warning-orange-light);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 30px 0;
+        }
+        .key-insight h4 { font-family: var(--font-heading); font-size: 18px; color: var(--warning-orange); margin-bottom: 8px; }
+        
+        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px; }
+        
+        @media (max-width: 900px) {
+            .slide { padding: 60px 24px 140px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1 -->
+        <div class="slide active">
+            <div class="slide-content" style="text-align: center;">
+                <div class="section-pill">Osmosis Team Primer</div>
+                <h1 class="hero-headline">
+                    A Week in the Life<br>
+                    <span class="hero-headline-bold">of an Allocator</span>
+                </h1>
+                <p class="body-text-large" style="max-width: 760px; margin: 30px auto;">
+                    A human look at the people our customers sell to—what their weeks actually look like, what they worry about, and how they process information.
+                </p>
+                <div style="margin-top: 60px; font-family: var(--font-mono); color: var(--ink-500); font-size: 14px;">Use arrow keys or buttons below to navigate →</div>
+            </div>
+        </div>
+        
+        <!-- Slide 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Start Here</div>
+                <h2 class="section-header">Why Study Their Week?</h2>
+                <p class="body-text-large">Asset managers are our customers. Allocators are <strong>their</strong> customers. To be credible with GPs, we need a felt sense of what the allocator side of the table lives every week.</p>
+                <ul class="body-text" style="padding-left: 24px; list-style: disc;">
+                    <li>What a head of infrastructure at a public plan is juggling.</li>
+                    <li>How an endowment associate actually consumes information.</li>
+                    <li>How a family office CIO decides where to spend scarce attention.</li>
+                </ul>
+                <div class="callout">
+                    <div class="callout-title">Empathy = Advantage</div>
+                    <p>If we see the world the way allocators do, we can help GPs show up smarter, more aligned, and less generic.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 3 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">The Humans</div>
+                <h2 class="section-header">Meet the Allocators We’ll Live With</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>🏗️ Maria Alvarez</h3>
+                        <p>Head of Infrastructure at a $70B+ public pension. Highly public role, consultant-driven workflows, heavy board oversight, frequent conference appearances.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>📚 Daniel Cho</h3>
+                        <p>Investment Associate at a $5B university endowment. Lean team, broad remit, memo-driven influence. Lives in GP diligence, references, and conferences.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>🏡 Sarah McIntyre</h3>
+                        <p>CIO of a $3B family office. Tiny team, concentrated decisions, deep trust-based relationships. Cares about multi-decade resilience and reputation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 4 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">The Environment</div>
+                <h2 class="section-header">The Allocator Reality</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>🏛️ Structural</h3>
+                        <p>Multi-asset portfolios spanning public equity, fixed income, PE, VC, infra, credit, real estate, hedge funds. Capital is plentiful; attention and political capital are scarce. Every GP competes for a sliver of bandwidth.</p>
+                        <p style="margin-top: 12px;">Constraints include boards, beneficiaries, donors, families, consultants, regulators, and media.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>📅 Weekly Reality</h3>
+                        <p>Back-to-back GP meetings, internal committees, memo drafting, monitoring existing managers, conferences, and peer networking—often simultaneously.</p>
+                        <p style="margin-top: 12px;">Their scarce resource isn’t capital—it’s attention and defensibility.</p>
+                    </div>
+                </div>
+                <div class="key-insight">
+                    <h4>Attention Is Their Currency</h4>
+                    <p>Winning their attention requires meeting them where they are mentally: fiduciary risk, information overload, and pressure to justify every decision.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 5 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Persona Deep Dive</div>
+                <h2 class="section-header">Maria Alvarez – Head of Infrastructure</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🎯 Mandate</h3>
+                            <p>Build and manage a multi-decade infrastructure portfolio across transportation, digital, and energy assets. Deliver inflation-linked returns to beneficiaries and keep boards comfortable.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🧠 Mental Model</h3>
+                            <p>“I’m a fiduciary whose decisions could end up in headlines.” Filters everything through risk buckets, cash flows, governance, and public defensibility.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>💓 Emotional Drivers</h3>
+                            <p>Pride in funding retiree benefits and building real-world assets. Fear of public embarrassment or political fallout from a bad GP call.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🏔️ Aspirations</h3>
+                            <p>Be the disciplined, forward-looking allocator peers cite on energy transition and infrastructure governance.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 6 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Weekly Rhythm</div>
+                <h2 class="section-header">Maria – Week at a Glance</h2>
+                <table class="comparison-table">
+                    <tr><th>Day</th><th>Morning</th><th>Afternoon</th></tr>
+                    <tr><td><strong>Monday</strong></td><td>Review infra metrics; scan consultant updates.</td><td>Team pipeline meeting; triage GP requests; prep IC items.</td></tr>
+                    <tr><td><strong>Tuesday</strong></td><td>Diligence calls with GPs (existing + new).</td><td>Memo drafting; coordinate with consultants on ratings/references.</td></tr>
+                    <tr><td><strong>Wednesday</strong></td><td>Risk/ESG committee; scenario analysis.</td><td>Board staff prep—slides, Q&A anticipation.</td></tr>
+                    <tr><td><strong>Thursday</strong></td><td>Investment committee/board meetings or final prep.</td><td>Follow-ups: action items, GP questions, next steps.</td></tr>
+                    <tr><td><strong>Friday</strong></td><td>1:1s with staff; performance review.</td><td>Admin, conference planning, clearing backlog, weekend reading.</td></tr>
+                </table>
+                <div class="key-insight">
+                    <h4>Always on Defense</h4>
+                    <p>Most Maria meetings involve explaining, justifying, or defending decisions in public forums.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 7 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Mental & Emotional</div>
+                <h2 class="section-header">Maria – What Each Day Feels Like</h2>
+                <div class="timeline">
+                    <div class="timeline-item"><div class="timeline-title">Monday – Reset</div><div class="timeline-content">Mental: “What changed that might blow up in headlines?” Emotional: Weight of fiduciary duty, regaining control.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Tuesday – Diligence</div><div class="timeline-content">Mental: “Does this GP’s story hold water across politics and cycles?” Emotional: Curious but skeptical.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Wednesday – Defensibility</div><div class="timeline-content">Mental: “Can I defend this in a hearing?” Emotional: High-stakes focus.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Thursday – On Stage</div><div class="timeline-content">Mental: “Stay precise; expect any question.” Emotional: Performance mode; relief afterward.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Friday – Horizon Scan</div><div class="timeline-content">Mental: “What’s coming in the next month?” Emotional: Tired but reflective.</div></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 8 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Jobs to Be Done</div>
+                <h2 class="section-header">Maria – Tasks, Problems, Data</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🛠️ Core Tasks</h3>
+                            <p>Maintain infra manager pipeline, coordinate with consultants, write memos, monitor performance, manage ESG/governance topics, prep for committees, speak at conferences.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>📥 Inputs & Processing</h3>
+                            <p>Consultant reports, GP decks, risk dashboards, public hearings, conference notes. Filters everything through governance and defensibility, synthesizes into memos and Q&A prep.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🚧 Problems</h3>
+                            <p>“Can I justify this manager to a skeptical board?” “Are we ahead or behind peers on energy transition?” “Are GPs aligned on fees and risk-sharing?”</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🏅 Differentiators</h3>
+                            <p>Triangulates GP claims with peer remarks, hearings, and historical experience. Builds a coherent infra narrative peers respect.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 9 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Relationships</div>
+                <h2 class="section-header">Maria – Who She Works With</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>Internal</h3>
+                        <p>CIO, asset-class heads, risk/ESG/legal, staff analysts, investment committee, board members.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>External</h3>
+                        <p>Consultants (Aon, Meketa, Mercer), GPs, other public plans, industry bodies, occasionally media/public hearings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 10 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Moments That Matter</div>
+                <h2 class="section-header">Maria – Positive vs Negative</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>🌤️ Positive</h3>
+                        <ul class="body-text" style="padding-left: 20px; list-style: disc;">
+                            <li>IC session where she anticipates every question.</li>
+                            <li>Consultant panel validates her energy-transition tilt.</li>
+                            <li>GP she backed early wins awards; peers ask how she underwrote it.</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3>⛈️ Negative</h3>
+                        <ul class="body-text" style="padding-left: 20px; list-style: disc;">
+                            <li>Public criticism or headline around a project she approved.</li>
+                            <li>Surprise governance issues revealed at conferences or hearings.</li>
+                            <li>Time wasted on off-policy GP pitches.</li>
+                        </ul>
+                        <p style="margin-top: 12px;">Osmosis helps by surfacing peer comments and early warnings from spoken forums.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 11 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Persona Deep Dive</div>
+                <h2 class="section-header">Daniel Cho – Investment Associate</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🧭 Role & Scope</h3>
+                            <p>Generalist covering multiple asset classes, first-pass filter for managers, memo writer whose analysis drives CIO decisions.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🧠 Mental Model</h3>
+                            <p>“My job is to separate signal from noise and turn conversations into actionable recommendations.”</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>💓 Emotional Drivers</h3>
+                            <p>Pride in tight memos and spotting hidden risks. Fear of missing red flags or being seen as sloppy.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🚀 Aspirations</h3>
+                            <p>Promotion to Investment Officer, eventual CIO path—or jump to a top-tier GP.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 12 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Weekly Rhythm</div>
+                <h2 class="section-header">Daniel – Week at a Glance</h2>
+                <table class="comparison-table">
+                    <tr><th>Day</th><th>Focus</th></tr>
+                    <tr><td><strong>Monday</strong></td><td>Agenda review, triage GP requests, 1–2 update calls, quick portfolio checks.</td></tr>
+                    <tr><td><strong>Tuesday</strong></td><td>Deep dive on managers, heavy reading, memo drafting, clarifications with GPs.</td></tr>
+                    <tr><td><strong>Wednesday</strong></td><td>Internal portfolio meeting, pacing discussion, conference content catch-up.</td></tr>
+                    <tr><td><strong>Thursday</strong></td><td>GP meetings, references, IC prep with CIO.</td></tr>
+                    <tr><td><strong>Friday</strong></td><td>Finalize memos, update trackers, plan weekend reading.</td></tr>
+                </table>
+                <div class="key-insight">
+                    <h4>Deep Work vs Interruptions</h4>
+                    <p>Daniel constantly battles for uninterrupted analysis time amid nonstop inbound.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 13 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Mental & Emotional</div>
+                <h2 class="section-header">Daniel – What the Week Feels Like</h2>
+                <div class="timeline">
+                    <div class="timeline-item"><div class="timeline-title">Monday</div><div class="timeline-content">Mental: “Where are my deadlines?” Emotional: Slight overwhelm, motivated.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Tuesday</div><div class="timeline-content">Mental: “I need 4 hours of deep work.” Emotional: Frustrated if day fragments.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Wednesday</div><div class="timeline-content">Mental: “What patterns are emerging?” Emotional: Curious, engaged.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Thursday</div><div class="timeline-content">Mental: “Can I defend my conclusions to the CIO?” Emotional: Anxious yet energized.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Friday</div><div class="timeline-content">Mental: “Did I move anything forward?” Emotional: Relief if memos ship, stress if not.</div></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 14 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Jobs to Be Done</div>
+                <h2 class="section-header">Daniel – Tasks, Problems, Data</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🛠️ Core Tasks</h3>
+                            <p>Screen managers, run references, read decks/DDQs/letters, build models, draft memos, track portfolio pacing.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>📥 Inputs</h3>
+                            <p>GP materials, legal docs, conference transcripts, peer commentary, past memos. Converts qualitative inputs into structured buckets (Team, Strategy, Edge, Risks).</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🚧 Problems</h3>
+                            <p>“Which managers are truly differentiated?” “Are we overweight a risk factor?” “Am I missing red flags?”</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🏅 Differentiators</h3>
+                            <p>Builds thematic libraries, cross-references allocator comments with GP claims, comfortable recommending “No.”</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 15 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Relationships</div>
+                <h2 class="section-header">Daniel – Who He Works With</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>Internal</h3>
+                        <p>CIO, senior PMs, ops/risk, other associates sharing intel informally.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>External</h3>
+                        <p>GPs, peers at other endowments/foundations, consultants/data providers, reference contacts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 16 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Moments That Matter</div>
+                <h2 class="section-header">Daniel – Positive vs Negative</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>🌤️ Positive</h3>
+                        <ul class="body-text" style="padding-left: 20px; list-style: disc;">
+                            <li>Memo lands; CIO praises clarity.</li>
+                            <li>Finds a panel quote that exposes GP inconsistency.</li>
+                            <li>Peers independently validate his thesis.</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3>⛈️ Negative</h3>
+                        <ul class="body-text" style="padding-left: 20px; list-style: disc;">
+                            <li>Surprise risk surfaces elsewhere first.</li>
+                            <li>Week filled with shallow GP pitches.</li>
+                            <li>IC challenges memo due to missing perspective.</li>
+                        </ul>
+                        <p style="margin-top: 12px;">Osmosis gives faster context, proof points for memos, and targeted alerts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 17 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Persona Deep Dive</div>
+                <h2 class="section-header">Sarah McIntyre – Family Office CIO</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🎯 Mandate</h3>
+                            <p>Oversee entire $3B portfolio for a single family. Preserve and grow capital over generations while aligning with family values.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🧠 Mental Model</h3>
+                            <p>“My edge is judgment across decades. I need a handful of high-conviction relationships, not 200 managers.”</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>💓 Emotional Drivers</h3>
+                            <p>Pride in protecting the family. Fear of permanent impairment or reputational misalignment.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🌄 Aspirations</h3>
+                            <p>Build a resilient, values-aligned portfolio that weathers any macro regime and earns long-term trust.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 18 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Weekly Rhythm</div>
+                <h2 class="section-header">Sarah – Week at a Glance</h2>
+                <table class="comparison-table">
+                    <tr><th>Day</th><th>Focus</th></tr>
+                    <tr><td><strong>Monday</strong></td><td>Performance dashboards, risk/liquidity check, small-team sync.</td></tr>
+                    <tr><td><strong>Tuesday</strong></td><td>GP relationship meetings; trust calibration.</td></tr>
+                    <tr><td><strong>Wednesday</strong></td><td>Thematic work (energy transition, AI infra, deglobalization); reading and thinking.</td></tr>
+                    <tr><td><strong>Thursday</strong></td><td>Selective events/panels; triage new ideas.</td></tr>
+                    <tr><td><strong>Friday</strong></td><td>Strategy review with team; decide which ideas move forward; prep communications for principals.</td></tr>
+                </table>
+                <div class="key-insight">
+                    <h4>Extreme Scarcity of Time</h4>
+                    <p>Sarah may take only a handful of new GP meetings per quarter. Every minute must matter.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 19 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Mental & Emotional</div>
+                <h2 class="section-header">Sarah – How the Week Feels</h2>
+                <div class="timeline">
+                    <div class="timeline-item"><div class="timeline-title">Monday – Flight Check</div><div class="timeline-content">Mental: “Any fires?” Emotional: Calm if steady, tense if surprises.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Tuesday – Trust</div><div class="timeline-content">Mental: “Do I still trust these GPs?” Emotional: Values candid, unscripted dialog.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Wednesday – Big Picture</div><div class="timeline-content">Mental: “Are we positioned for the next decade?” Emotional: Energized by deep thinking.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Thursday – Market Feel</div><div class="timeline-content">Mental: “What narratives are peers sharing?” Emotional: Energized by great conversations, drained by superficial ones.</div></div>
+                    <div class="timeline-item"><div class="timeline-title">Friday – Clarity Check</div><div class="timeline-content">Mental: “Are we drifting?” Emotional: Uneasy if pipeline feels reactive.</div></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 20 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Jobs to Be Done</div>
+                <h2 class="section-header">Sarah – Tasks, Problems, Data</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🛠️ Core Tasks</h3>
+                            <p>Set asset allocation, decide which GPs to back, communicate with principals, maintain deep relationships, monitor macro themes.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>📥 Inputs</h3>
+                            <p>Team summaries, direct GP conversations, peer CIO roundtables, selective conferences, podcasts.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🚧 Problems</h3>
+                            <p>“Which relationships deserve long-term capital?” “Are we overexposed to certain people or styles?” “What are we not seeing?”</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🏅 Differentiators</h3>
+                            <p>Says “no” quickly, integrates qualitative signals with numbers, keeps a stable core while evolving edges.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 21 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Relationships</div>
+                <h2 class="section-header">Sarah – Who She Talks To</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>Internal</h3>
+                        <p>Principals/family, tiny investment team, operations/legal/tax partners.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>External</h3>
+                        <p>Long-term GPs, selected new managers, peer CIOs, specialized advisors.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 22 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Moments That Matter</div>
+                <h2 class="section-header">Sarah – Positive vs Negative</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>🌤️ Positive</h3>
+                        <ul class="body-text" style="padding-left: 20px; list-style: disc;">
+                            <li>GP she backed during a tough cycle outperforms; principals praise conviction.</li>
+                            <li>Family member says “I finally understand why we own this.”</li>
+                            <li>Roundtable theme matches positioning she already has.</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3>⛈️ Negative</h3>
+                        <ul class="body-text" style="padding-left: 20px; list-style: disc;">
+                            <li>GP faces public scrutiny; she feels blindsided.</li>
+                            <li>Principal questions alignment after hearing peer comments.</li>
+                            <li>Week consumed by mediocre meetings; little deep thinking.</li>
+                        </ul>
+                        <p style="margin-top: 12px;">Osmosis surfaces allocator/GP sentiment so she can stay ahead of reputational shifts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 23 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Cross-Cutting View</div>
+                <h2 class="section-header">How the Personas Compare</h2>
+                <table class="comparison-table">
+                    <tr><th>Dimension</th><th>Maria (Public Plan)</th><th>Daniel (Endowment)</th><th>Sarah (Family Office)</th></tr>
+                    <tr><td>Time Horizon</td><td>Multi-decade, public accountability</td><td>Long-term but career incentives</td><td>Multi-generational family lens</td></tr>
+                    <tr><td>Decision Speed</td><td>Slow, committee-driven</td><td>Medium (memo + CIO)</td><td>Fast, concentrated</td></tr>
+                    <tr><td>Transparency</td><td>Highly public</td><td>Private but peer-aware</td><td>Very private</td></tr>
+                    <tr><td>Main Pain</td><td>Defensibility & scrutiny</td><td>Overload & synthesis</td><td>Time & judgment</td></tr>
+                    <tr><td>Emotional Risk</td><td>Public embarrassment</td><td>Missing key risk</td><td>Permanent capital loss</td></tr>
+                </table>
+                <div class="key-insight">
+                    <h4>Same Deck, Different Brains</h4>
+                    <p>GPs often pitch the same story to all three, but each persona is running a completely different mental program.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 24 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Data & Decisions</div>
+                <h2 class="section-header">Spoken Content: Today vs With Osmosis</h2>
+                <table class="comparison-table">
+                    <tr><th>Today</th><th>With Osmosis</th></tr>
+                    <tr>
+                        <td>
+                            <ul class="body-text" style="list-style: disc; padding-left: 20px;">
+                                <li>Panels, hearings, interviews are scattered and half-remembered.</li>
+                                <li>Notes live in personal notebooks or inboxes.</li>
+                                <li>Prep requires frantic Googling and peer calls.</li>
+                                <li>Context rarely flows between teams or over time.</li>
+                            </ul>
+                        </td>
+                        <td>
+                            <ul class="body-text" style="list-style: disc; padding-left: 20px;">
+                                <li>Allocator voices captured, transcribed, tagged by persona, topic, and asset class.</li>
+                                <li>Maria gets peer/consultant quotes to defend positions.</li>
+                                <li>Daniel pulls evidence for memos in minutes.</li>
+                                <li>Sarah sees thematic sentiment shifts before they become headlines.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Slide 25 -->
+        <div class="slide">
+            <div class="slide-content" style="text-align: center;">
+                <div class="section-pill">Wrap Up</div>
+                <h2 class="section-header">The Story in 30 Seconds</h2>
+                <div style="max-width: 850px; margin: 0 auto; text-align: left;">
+                    <p class="body-text-large">Maria, Daniel, and Sarah are all trying to answer the same question: <strong>Where should scarce, long-term capital go—and how do we justify those decisions?</strong></p>
+                    <p class="body-text-large">Their weeks are full of committee prep, memo writing, board politics, and cognitive overload. Spoken content from allocators, consultants, and GPs is everywhere but rarely structured.</p>
+                    <p class="body-text-large">Osmosis makes that content findable, synthesized, and persona-specific so GPs can show up better prepared, aligned, and trusted.</p>
+                </div>
+                <div class="callout" style="margin-top: 40px; display: inline-block; text-align: left;">
+                    <div class="callout-title" style="color: white; background: var(--color-accent); display: inline-block; padding: 6px 10px; border-radius: 999px;">Next Step</div>
+                    <p style="margin-top: 12px;">“We help capital formation teams speak the allocator’s language because we capture what those allocators are actually saying.”</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-controls">
+            <button class="nav-btn" onclick="previousSlide()" id="prevBtn">← Previous</button>
+            <div class="slide-indicator"><span id="currentSlide">1</span> / <span id="totalSlides">25</span></div>
+            <button class="nav-btn" onclick="nextSlide()" id="nextBtn">Next →</button>
+        </div>
+    </div>
+    
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('totalSlides').textContent = totalSlides;
+        
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            if (index >= 0 && index < totalSlides) {
+                slides[index].classList.add('active');
+                slides[index].scrollTop = 0;
+                currentSlideIndex = index;
+                document.getElementById('currentSlide').textContent = index + 1;
+                document.getElementById('prevBtn').disabled = index === 0;
+                document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+            }
+        }
+        function nextSlide() { if (currentSlideIndex < totalSlides - 1) { showSlide(currentSlideIndex + 1); } }
+        function previousSlide() { if (currentSlideIndex > 0) { showSlide(currentSlideIndex - 1); } }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') { previousSlide(); }
+            else if (e.key >= '1' && e.key <= '9') {
+                const slideNum = parseInt(e.key, 10);
+                if (slideNum <= totalSlides) { showSlide(slideNum - 1); }
+            }
+        });
+        showSlide(0);
+    </script>
+</body>
+</html>

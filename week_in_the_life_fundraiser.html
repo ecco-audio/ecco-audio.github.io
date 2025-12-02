@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Week in the Life of a Fundraiser</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Sans+Condensed:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+        
+        :root {
+            --radius: 0.625rem;
+            --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+            --font-mono: "IBM Plex Mono", monospace;
+            --font-heading: "IBM Plex Sans Condensed", system-ui, sans-serif;
+            
+            --color-primary: #0a0a0a;
+            --color-secondary: rgb(248, 97, 60);
+            --color-accent: rgb(42, 96, 248);
+            --color-background: white;
+            --color-foreground: #0a0a0a;
+            
+            --surface-50: #F9FAFB;
+            --border-100: #ECEFF3;
+            --ink-900: #0F1226;
+            --ink-700: #30364D;
+            --ink-500: #5A6178;
+            --brand-primary-600: #3B43F2;
+            --brand-gradient: linear-gradient(90deg, #1A2FFB 0%, #44B0FF 100%);
+            --money-green: #1C8A49;
+            --money-green-light: #E9F7EF;
+            --warning-orange: #D97706;
+            --warning-orange-light: #FEF3C7;
+            --shadow-elev-2: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+            --shadow-elev-3: 0 1px 3px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            color: var(--color-foreground);
+            background: var(--color-background);
+            overflow-x: hidden;
+        }
+        
+        .presentation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease;
+            padding: 80px 60px 140px;
+            overflow-y: auto;
+        }
+        
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .nav-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-elev-3);
+        }
+        
+        .nav-btn {
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-family: var(--font-mono);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-btn:hover {
+            background: #1D054F;
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .slide-indicator {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .hero-headline {
+            font-family: var(--font-heading);
+            font-size: 70px;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin-bottom: 30px;
+            font-weight: 300;
+            color: var(--ink-900);
+        }
+        
+        .hero-headline-bold {
+            font-weight: 600;
+            color: var(--color-accent);
+        }
+        
+        .section-header {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            font-size: 52px;
+            line-height: 110%;
+            letter-spacing: -0.04em;
+            color: #1D054F;
+            margin-bottom: 40px;
+        }
+        
+        .section-subheader {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            font-size: 36px;
+            line-height: 110%;
+            letter-spacing: -0.03em;
+            color: #1D054F;
+            margin-bottom: 30px;
+        }
+        
+        .section-pill {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 12px;
+            line-height: 20px;
+            color: var(--color-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 24px;
+            display: inline-block;
+            padding: 6px 12px;
+            border: 1px solid var(--color-secondary);
+            border-radius: 20px;
+        }
+        
+        .body-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--ink-700);
+            margin-bottom: 20px;
+        }
+        
+        .body-text-large {
+            font-size: 22px;
+            line-height: 1.7;
+            color: var(--ink-700);
+            margin-bottom: 24px;
+        }
+        
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .flow-box {
+            background: var(--surface-50);
+            border: 2px solid var(--border-100);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        .flow-box:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-elev-2);
+        }
+        
+        .flow-box.highlight {
+            border-color: var(--color-accent);
+            background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+        }
+        
+        .flow-box.money {
+            border-color: var(--money-green);
+            background: var(--money-green-light);
+        }
+        
+        .flow-box-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .flow-box-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ink-900);
+            margin-bottom: 8px;
+        }
+        
+        .flow-box-subtitle {
+            font-size: 14px;
+            color: var(--ink-500);
+        }
+        
+        .flow-arrow {
+            font-size: 32px;
+            color: var(--color-accent);
+        }
+        
+        .flow-arrow-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--ink-500);
+            text-align: center;
+            display: block;
+            margin-top: -8px;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: var(--surface-50);
+            border: 1px solid var(--border-100);
+            border-radius: 16px;
+            padding: 28px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .info-card:hover {
+            box-shadow: var(--shadow-elev-2);
+            transform: translateY(-2px);
+        }
+        
+        .info-card h3 {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--ink-900);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .info-card p {
+            color: var(--ink-700);
+            line-height: 1.6;
+        }
+        
+        .callout {
+            background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+            border-left: 4px solid var(--color-accent);
+            border-radius: 0 12px 12px 0;
+            padding: 24px 28px;
+            margin: 30px 0;
+        }
+        
+        .callout-title {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--color-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+        
+        .callout p {
+            color: var(--ink-700);
+            font-size: 17px;
+            line-height: 1.6;
+        }
+        
+        .money-math {
+            background: var(--money-green-light);
+            border: 2px solid var(--money-green);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 30px 0;
+        }
+        
+        .money-math h4 {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--money-green);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+        }
+        
+        .timeline {
+            position: relative;
+            margin: 40px 0;
+            padding-left: 40px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-100);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 32px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 6px;
+            width: 16px;
+            height: 16px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--color-accent);
+        }
+        
+        .timeline-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ink-900);
+            margin-bottom: 8px;
+        }
+        
+        .timeline-content {
+            color: var(--ink-700);
+            line-height: 1.6;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 30px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-elev-2);
+        }
+        
+        .comparison-table th {
+            background: var(--ink-900);
+            color: white;
+            font-family: var(--font-heading);
+            font-weight: 500;
+            padding: 20px 24px;
+            text-align: left;
+        }
+        
+        .comparison-table td {
+            background: white;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-100);
+            color: var(--ink-700);
+        }
+        
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .comparison-table tr:hover td {
+            background: var(--surface-50);
+        }
+        
+        .osmosis-highlight {
+            background: var(--brand-gradient);
+            color: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin: 40px 0;
+            text-align: center;
+        }
+        
+        .osmosis-highlight h3 {
+            font-family: var(--font-heading);
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+        
+        .osmosis-highlight p {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .quiz-section {
+            background: var(--surface-50);
+            border: 1px solid var(--border-100);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 30px 0;
+        }
+        
+        .quiz-question {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            color: var(--ink-900);
+            margin-bottom: 24px;
+        }
+        
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .quiz-option {
+            background: white;
+            border: 2px solid var(--border-100);
+            border-radius: 12px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+        
+        .quiz-option:hover {
+            border-color: var(--color-accent);
+            background: #F8FAFF;
+        }
+        
+        .quiz-option.selected {
+            border-color: var(--color-accent);
+            background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+        }
+        
+        .key-insight {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            background: var(--warning-orange-light);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        
+        .key-insight-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+        
+        .key-insight-content h4 {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            color: var(--warning-orange);
+            margin-bottom: 8px;
+        }
+        
+        .key-insight-content p {
+            color: var(--ink-700);
+            line-height: 1.5;
+        }
+        
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        
+        @media (max-width: 900px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        
+        <!-- Slide 1 -->
+        <div class="slide active">
+            <div class="slide-content" style="text-align: center;">
+                <div class="section-pill">Osmosis Team Primer</div>
+                <h1 class="hero-headline">
+                    A Week in the Life<br>
+                    <span class="hero-headline-bold">of a Fundraiser</span>
+                </h1>
+                <p class="body-text-large" style="max-width: 760px; margin: 30px auto;">
+                    A human, practical view of the people we sell to at multi-asset platforms—what their week looks like, when they feel pressure, and where Osmosis gives them leverage.
+                </p>
+                <div style="margin-top: 60px; font-family: var(--font-mono); color: var(--ink-500); font-size: 14px;">
+                    Use arrow keys or buttons below to navigate →
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Start Here</div>
+                <h2 class="section-header">Why Study Their Week?</h2>
+                <p class="body-text-large">Fundraising isn’t an abstract funnel—it’s a messy calendar managed by exhausted people. If we map their real week we understand the exact pressure points that make them search for help.</p>
+                <ul class="body-text" style="padding-left: 24px; margin-bottom: 24px; list-style: disc;">
+                    <li>Know <strong>when</strong> they feel exposed (consultant meetings, pipeline reviews, first-close deadlines).</li>
+                    <li>Know <strong>what</strong> they scramble to assemble (LP briefs, decks, proof points).</li>
+                    <li>Know <strong>who</strong> actually pulls the trigger on new tools.</li>
+                </ul>
+                <div class="callout">
+                    <div class="callout-title">Empathy → Credibility</div>
+                    <p>“We don’t sell to ‘fundraisers’. We sell to <strong>Mac in London on Tuesday night</strong> trying to prep for a consultant touchpoint on three hours of sleep.”</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 3 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">The Environment</div>
+                <h2 class="section-header">Life on a Multi-Asset Platform</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>🏢 The Platform</h3>
+                        <p>Private equity, private credit, real estate, infrastructure, maybe hybrids and public sleeves. Multiple funds are in market simultaneously—Flagship PE V, Credit III, Infra II, a perpetual product.</p>
+                        <p style="margin-top: 12px;">Global LP base: pensions, SWFs, endowments, family offices, wealth channels.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>🎛️ Fundraising Implications</h3>
+                        <p>Someone is <em>always</em> raising. Teams juggle competing internal constituencies (each PM wants the spotlight) while leaning on consultants, OCIOs, and platforms to scale distribution.</p>
+                        <p style="margin-top: 12px;">Fundraising becomes portfolio management of relationships, not one mega-campaign every three years.</p>
+                    </div>
+                </div>
+                <div class="key-insight">
+                    <div class="key-insight-icon">🔄</div>
+                    <div class="key-insight-content">
+                        <h4>Platform = Constant Motion</h4>
+                        <p>Capital formation is less “one and done” and more “keep every lane moving without crashing.” Intelligence must flow across strategies or the machine seizes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 4 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">The Humans</div>
+                <h2 class="section-header">Three Personas We Must Nail</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>🛫 Mac – Capital Formation Associate</h3>
+                        <p>Late 20s, 2–4 years in. Air-traffic control for logistics, research, CRM, and prep. Lives in Outlook, Excel, CRM, Zoom. Aspirations: be “go-to” on a strategy and earn more coverage.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>🎯 Sarah – Head of Fundraising</h3>
+                        <p>MD/Partner. Quarterback, chief storyteller, chief therapist. Owns revenue targets, product prioritization, LP/consultant diplomacy. Success = predictable closes + zero surprises.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>⚙️ COO – Platform Operations</h3>
+                        <p>Runs the machine: tech stack, workflows, compliance, headcount. Wants scalable, institutional processes and hates key-person risk. Approves tools if they reduce friction.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 5 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Persona Deep Dive</div>
+                <h2 class="section-header">Mac – Capital Formation Associate</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>📌 Role & KPIs</h3>
+                            <p>Keep pipeline accurate, materials current, and senior people prepared. Measured on meeting volume, coverage, follow-up SLAs, and error-free execution.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🧠 Mental Model</h3>
+                            <p>“I’m the router between LPs, coverage owners, PMs, and ops.” Success = reliable, fast, and two steps ahead.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>💥 Emotional Drivers</h3>
+                            <p>Wants to be trusted, sharp, promotable. Fear = being the reason something slipped (missed follow-up, wrong data in deck).</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🚀 Aspirations</h3>
+                            <p>Short term: become “go-to” on private credit + infra. Mid-term: VP/coverage role or path to IR/investing.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 6 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Persona Deep Dive</div>
+                <h2 class="section-header">Sarah – Head of Fundraising</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🎯 Mandate</h3>
+                            <p>Deliver $15B+ across products, shape the platform narrative, protect key relationships, and retain top talent. Always triaging scarce senior time toward highest-probability dollars.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🧭 Mental Frame</h3>
+                            <p>“I orchestrate scarce executive time against the best capital.” Thinks in LP portfolios: re-ups, strategic new logos, consultant/OCIO multipliers.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>💓 Emotional Drivers</h3>
+                            <p>Hates surprises, thrives on momentum. Pride = being seen as platform growth engine. Anxiety = silent LPs, negative consultant chatter.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🏔️ Aspirations</h3>
+                            <p>Be regarded internally as strategic leadership (not just “sales”) and earn the global head / partner remit over time.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 7 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Persona Deep Dive</div>
+                <h2 class="section-header">COO – Owner of the Machine</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>⚙️ Mandate</h3>
+                            <p>Scale fundraising + IR without breaking compliance, data, or headcount budgets. Keep LP experience consistent across strategies and geographies.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🧠 Mental Model</h3>
+                            <p>“We’re no longer a boutique; we need industrial-grade processes.” Sees the firm as interconnected workflows that must integrate.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>💥 Emotional Drivers</h3>
+                            <p>Fears operational embarrassment and key-person risk. Pride when LPs praise professionalism and when the CEO says “we look institutional.”</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🌄 Aspirations</h3>
+                            <p>Build a platform operating model other managers benchmark. Be the trusted operator to CEO and board.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 8 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Relationships</div>
+                <h2 class="section-header">Who They Dance With</h2>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Mac’s Network</h3>
+                        <p><strong>Internal:</strong> Head of FR, IR, PMs/strategy leads, marketing, legal/compliance, ops.
+                        <br><strong>External:</strong> LP coordinators, consultants, OCIO schedulers, conference teams.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Sarah’s Network</h3>
+                        <p><strong>Internal:</strong> CEO/CIO, PMs, COO, marketing, product.
+                        <br><strong>External:</strong> CIOs, heads of alts, consultant partners, placement agents, wealth platforms.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>COO’s Network</h3>
+                        <p><strong>Internal:</strong> CEO, CFO, IT/data, legal, HR, Head of FR.
+                        <br><strong>External:</strong> Vendors (CRM/data), administrators, ops consultants, occasionally LP ops teams.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 9 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Weekly Rhythm</div>
+                <h2 class="section-header">Mac – The Week at a Glance</h2>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Day</th>
+                        <th>Morning</th>
+                        <th>Afternoon</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Monday</strong></td>
+                        <td>Weekend email triage, pipeline cleanup, prep for internal pipeline meeting.</td>
+                        <td>Deck updates, follow-ups, data room admin, gather PM inputs.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tuesday</strong></td>
+                        <td>Meeting prep: LP briefs, consultant research, intel requests.</td>
+                        <td>Zooms as note-taker / fact-checker, immediate CRM updates.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Wednesday</strong></td>
+                        <td>Conference intel tracking, who said what, tag CRM with themes.</td>
+                        <td>Re-prioritize outreach based on intel, coordinate cross-strategy asks.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Thursday</strong></td>
+                        <td>Consultant/OCIO touchpoint prep, bespoke materials.</td>
+                        <td>Cross-strategy coordination: “Which products do we lead with?”</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Friday</strong></td>
+                        <td>Reporting up to Head of FR, ops tasks, clean notes.</td>
+                        <td>Plan next week, chase responses, tidy CRM before the weekend.</td>
+                    </tr>
+                </table>
+                <div class="key-insight">
+                    <div class="key-insight-icon">🧵</div>
+                    <div class="key-insight-content">
+                        <h4>Mac’s Real Job</h4>
+                        <p>Mac spends most of the week stitching information together for others—not choosing strategy. Missing intel feels like professional failure.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 10 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Mental & Emotional</div>
+                <h2 class="section-header">Mac – What Each Day Feels Like</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-title">Monday</div>
+                        <div class="timeline-content">Mental: “If pipeline isn’t perfect now, the whole week collapses.” Emotional: overloaded but motivated.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">Tuesday</div>
+                        <div class="timeline-content">Mental: “I must know more about this LP than they expect.” Emotional: anxious before MD meetings, relieved when prep lands.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">Wednesday</div>
+                        <div class="timeline-content">Mental: “Too much content, not enough time.” Emotional: frustration at manual note-taking and fear of missing critical intel.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">Thursday</div>
+                        <div class="timeline-content">Mental: “Consultants are kingmakers.” Emotional: high stakes; nervous without crisp intel.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">Friday</div>
+                        <div class="timeline-content">Mental: “Did I drop any balls?” Emotional: tension until reporting is done; mild decompression afterward.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 11 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Jobs to Be Done</div>
+                <h2 class="section-header">Mac – Tasks, Problems, Data Flows</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>📝 Core Tasks</h3>
+                            <p>Build LP target lists, prep bespoke meeting packs, update CRM stages, coordinate PM intel, track conference remarks, and manage inbound interest.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>📊 Data Inputs & Outputs</h3>
+                            <p>Inputs: conference content, consultant notes, LP statements, internal spreadsheets. Processing: manual searches, PDF skims, mental tagging. Output: LP briefs, CRM notes, talking points.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🚧 Problems</h3>
+                            <p>“Are we talking to the right LPs at the right time?” “How do I summarize what this allocator cares about without reading 40 PDFs?” Fear of embarrassing senior MDs with stale intel.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🏅 High Performer Behaviors</h3>
+                            <p>Builds reusable knowledge, anticipates MD questions, uses data to redirect conversations (“lead with infra; they’re saturated in buyout”).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 12 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Moments That Matter</div>
+                <h2 class="section-header">Mac – Good vs Bad Moments</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card">
+                            <h3>🌤️ Positive</h3>
+                            <ul class="body-text" style="list-style: disc; padding-left: 20px;">
+                                <li>Consultant says: “You clearly did your homework on our client’s priorities.”</li>
+                                <li>Head of FR forwards Mac’s prep note to CIO with “Best LP prep I’ve seen.”</li>
+                                <li>LP praises tailored materials: “You really understand our program.”</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card">
+                            <h3>⛈️ Negative</h3>
+                            <ul class="body-text" style="list-style: disc; padding-left: 20px;">
+                                <li>Senior MD asks why they missed a public comment about reducing PE exposure.</li>
+                                <li>LP references conference remarks; team looks clueless.</li>
+                                <li>Night-before scramble because no one captured consultant sentiment.</li>
+                            </ul>
+                            <p style="margin-top: 12px;">Osmosis moments: instant search for allocator quotes, auto-generated LP briefs, alerts when targets speak.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 13 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Weekly Rhythm</div>
+                <h2 class="section-header">Head of Fundraising – The Orchestrator’s Week</h2>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Day</th>
+                        <th>Morning Focus</th>
+                        <th>Afternoon & Evening</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Monday</strong></td>
+                        <td>Internal pipeline review by product, region, owner.</td>
+                        <td>Reallocate coverage resources; align with CEO/CIO on priorities.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tuesday</strong></td>
+                        <td>Back-to-back LP/consultant meetings.</td>
+                        <td>Rapid internal debriefs: “Is this real? What’s next?”</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Wednesday</strong></td>
+                        <td>Product alignment with PMs + marketing; refine narrative.</td>
+                        <td>Problem-account strategy sessions; prepping new campaigns.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Thursday</strong></td>
+                        <td>Roadshow days; heavy travel; board dinners.</td>
+                        <td>Evening LP/consultant dinners, relationship stewardship.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Friday</strong></td>
+                        <td>Review progress vs target with COO/CIO/CEO.</td>
+                        <td>Identify quarter risks, prep notes for Monday pipeline.</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Slide 14 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Mental & Emotional</div>
+                <h2 class="section-header">Inside the Head of Fundraising</h2>
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>🧠 Mental Model</h3>
+                        <p>Constant prioritization: “Which conversations move the needle?” Running a mental P&L: missing first close = platform narrative risk. Thinks in LP portfolios (re-ups, strategic new logos, consultants as multipliers).</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>💬 Emotional Landscape</h3>
+                        <p>Baseline stress, heightened by silent LPs or negative consultant whispers. Pride when they win cornerstone commitments and show up as the smartest person in the room. Anxiety when the team looks tone-deaf to public allocator statements.</p>
+                    </div>
+                </div>
+                <div class="callout">
+                    <div class="callout-title">Aspirational Self-Image</div>
+                    <p>“I’m not a glorified salesperson. I’m the strategic growth engine who knows where allocator demand is heading before the market does.”</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 15 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Jobs to Be Done</div>
+                <h2 class="section-header">Head of Fundraising – Problems & Differentiators</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🚧 Problems</h3>
+                            <p>“Where is allocator demand moving?” “Are we missing consultant shifts until it’s too late?” “How do I coordinate PMs who all want top billing?” “How do I avoid bad surprises in CIO/board rooms?”</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>💡 Osmosis Fit</h3>
+                            <p>Executive dashboards on what target LPs + consultants said this quarter, meeting prep snapshots that surface blind spots, alerts when narratives change.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🏅 Differentiators</h3>
+                            <p>Top operators walk into meetings with specific, recent knowledge; tailor story to each allocator’s politics; connect dots across public remarks; use data to align internal debates.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>📥 Data Reality</h3>
+                            <p>Relies on summary decks from lieutenants, consultant memos, anecdotal conference notes. Gaps: spoken content isn’t searchable, lots of “I heard at a conference…” vs structured truth.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 16 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Weekly Rhythm</div>
+                <h2 class="section-header">COO – Running the Machine</h2>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Day</th>
+                        <th>Focus</th>
+                        <th>What’s at Stake</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Monday</strong></td>
+                        <td>Ops metrics, SLA review, budget check-ins.</td>
+                        <td>Ensure teams respond fast, data clean, no compliance backlog.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tuesday</strong></td>
+                        <td>Vendor/tech stack discussions, risk/compliance reviews.</td>
+                        <td>Avoid tool sprawl; keep regulators happy.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Wednesday</strong></td>
+                        <td>Strategic projects (new regions, channels), cross-functional working groups.</td>
+                        <td>Build scalable processes before launches hit.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Thursday</strong></td>
+                        <td>Meet PMs/CIO on fundraising enablement needs; unblock bottlenecks.</td>
+                        <td>Show responsiveness to commercial pain.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Friday</strong></td>
+                        <td>Report to CEO/board, prioritize next week.</td>
+                        <td>Defend investments, prove platform is institutional-grade.</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Slide 17 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Jobs to Be Done</div>
+                <h2 class="section-header">COO – Problems, Motivations, Osmosis Angle</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🚧 Key Problems</h3>
+                            <p>Running a multi-billion platform on tribal knowledge, every new tool adds change-management drag, decisions made on gut vs data.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>💬 Emotional Motivations</h3>
+                            <p>Wants to be the person who professionalized the platform. Fears a major operational failure or wasted tech spend. Pride when LPs cite best-in-class experience.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card" style="margin-bottom: 24px;">
+                            <h3>🏅 What Great Looks Like</h3>
+                            <p>Thinks in systems, builds coherent stacks, enforces adoption. Measures: prep time down, win rates up, fewer errors.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>🛰️ Osmosis Fit</h3>
+                            <p>Shared, structured allocator/consultant intelligence feeding CRM/BI. Ability to show CEO/board that meeting prep time dropped and win rates improved because allocator memory is institutionalized.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 18 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Moments That Matter</div>
+                <h2 class="section-header">When the Week Goes Right vs Wrong</h2>
+                <div class="two-col">
+                    <div>
+                        <div class="info-card">
+                            <h3>✅ Positive Week</h3>
+                            <ul class="body-text" style="padding-left: 20px; list-style: disc;">
+                                <li><strong>Mac:</strong> Preps LP briefs using fresh quotes; team feels armed.</li>
+                                <li><strong>Sarah:</strong> Spots thematic shift early (“LPs tilting into private credit”), pivots story, wins flagship mandate.</li>
+                                <li><strong>COO:</strong> Sees clean, consistent data; hears LP praise on professionalism.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-card">
+                            <h3>⚠️ Negative Week</h3>
+                            <ul class="body-text" style="padding-left: 20px; list-style: disc;">
+                                <li><strong>Mac:</strong> Gets blamed for missing consultant remarks and scrambling for prep.</li>
+                                <li><strong>Sarah:</strong> Walks into meeting where LP cites a panel the team never saw.</li>
+                                <li><strong>COO:</strong> Realizes strategic decisions are made on anecdotes, not institutional memory.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 19 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Data & Decisions</div>
+                <h2 class="section-header">From Noise to Signal</h2>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Today</th>
+                        <th>With Osmosis</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ul class="body-text" style="list-style: disc; padding-left: 20px;">
+                                <li>Conference content is scattered and ephemeral.</li>
+                                <li>Spoken LP/consultant remarks live in notebooks or memory.</li>
+                                <li>Prep = frantic Googling + Slack pings + anecdotal recall.</li>
+                                <li>CRM captures metadata, not rich context.</li>
+                            </ul>
+                        </td>
+                        <td>
+                            <ul class="body-text" style="list-style: disc; padding-left: 20px;">
+                                <li>Allocator voices captured, searchable, tagged by strategy.</li>
+                                <li>Mac gets meeting-level briefs; Sarah gets thematic trend views; COO gets usage + efficiency analytics.</li>
+                                <li>Alerts surface shifts in demand or consultant sentiment instantly.</li>
+                                <li>Fundraising decisions rely on institutionalized memory, not anecdotes.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Slide 20 -->
+        <div class="slide">
+            <div class="slide-content" style="text-align: center;">
+                <div class="section-pill">Bringing It Together</div>
+                <h2 class="section-header">The Story in 30 Seconds</h2>
+                <div style="max-width: 850px; margin: 0 auto; text-align: left;">
+                    <p class="body-text-large"><strong>A multi-asset manager’s fundraising machine is powered by Mac, Sarah, and the COO.</strong> They attack the same problem from different angles: get the right capital from the right allocators on the right terms without breaking the machine.</p>
+                    <p class="body-text-large">They are constrained by fragmented information, heavy manual prep, and fear of missing allocator/consultant signals.</p>
+                    <p class="body-text-large">Osmosis gives each a superpower:<br>
+                        • <strong>Mac:</strong> “I always know what this LP/consultant has said.”<br>
+                        • <strong>Sarah:</strong> “I can see where the puck is going.”<br>
+                        • <strong>COO:</strong> “Allocator intelligence is institutionalized, not stuck in someone’s inbox.”
+                    </p>
+                </div>
+                <div class="osmosis-highlight" style="margin-top: 50px;">
+                    <h3>Now you understand their week. Go sell.</h3>
+                    <p>“We help capital formation teams turn chaotic calendars into confident conversations—because they never miss what allocators are saying.”</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-controls">
+            <button class="nav-btn" onclick="previousSlide()" id="prevBtn">← Previous</button>
+            <div class="slide-indicator">
+                <span id="currentSlide">1</span> / <span id="totalSlides">20</span>
+            </div>
+            <button class="nav-btn" onclick="nextSlide()" id="nextBtn">Next →</button>
+        </div>
+    </div>
+    
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('totalSlides').textContent = totalSlides;
+        
+        function showSlide(index) {
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            if (index >= 0 && index < totalSlides) {
+                slides[index].classList.add('active');
+                slides[index].scrollTop = 0;
+                currentSlideIndex = index;
+                document.getElementById('currentSlide').textContent = index + 1;
+                
+                document.getElementById('prevBtn').disabled = index === 0;
+                document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+        
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            } else if (e.key >= '1' && e.key <= '9') {
+                const slideNum = parseInt(e.key);
+                if (slideNum <= totalSlides) {
+                    showSlide(slideNum - 1);
+                }
+            }
+        });
+        
+        showSlide(0);
+    </script>
+</body>
+</html>
