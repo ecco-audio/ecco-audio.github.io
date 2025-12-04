@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allocators 101: How LPs Think and Decide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Sans+Condensed:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+        
+        :root {
+            --radius: 0.625rem;
+            --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+            --font-mono: "IBM Plex Mono", monospace;
+            --font-heading: "IBM Plex Sans Condensed", system-ui, sans-serif;
+            
+            --color-primary: #0a0a0a;
+            --color-secondary: rgb(248, 97, 60);
+            --color-accent: rgb(42, 96, 248);
+            --color-background: white;
+            --color-foreground: #0a0a0a;
+            
+            --surface-50: #F9FAFB;
+            --border-100: #ECEFF3;
+            --ink-900: #0F1226;
+            --ink-700: #30364D;
+            --ink-500: #5A6178;
+            --brand-primary-600: #3B43F2;
+            --brand-gradient: linear-gradient(90deg, #1A2FFB 0%, #44B0FF 100%);
+            --money-green: #1C8A49;
+            --money-green-light: #E9F7EF;
+            --warning-orange: #D97706;
+            --warning-orange-light: #FEF3C7;
+            --shadow-elev-2: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+            --shadow-elev-3: 0 1px 3px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            color: var(--color-foreground);
+            background: var(--color-background);
+            overflow-x: hidden;
+        }
+        
+        .presentation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease;
+            padding: 80px 60px 140px;
+            overflow-y: auto;
+        }
+        
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* Navigation */
+        .nav-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-elev-3);
+        }
+        
+        .nav-btn {
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            font-family: var(--font-mono);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-btn:hover {
+            background: #1D054F;
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .slide-indicator {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Typography */
+        .hero-headline {
+            font-family: var(--font-heading);
+            font-size: 70px;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin-bottom: 30px;
+            font-weight: 300;
+            color: var(--ink-900);
+        }
+        
+        .hero-headline-bold {
+            font-weight: 600;
+            color: var(--color-accent);
+        }
+        
+        .section-header {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            font-size: 52px;
+            line-height: 110%;
+            letter-spacing: -0.04em;
+            color: #1D054F;
+            margin-bottom: 40px;
+        }
+        
+        .section-subheader {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            font-size: 36px;
+            line-height: 110%;
+            letter-spacing: -0.03em;
+            color: #1D054F;
+            margin-bottom: 30px;
+        }
+        
+        .section-pill {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 12px;
+            line-height: 20px;
+            color: var(--color-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 24px;
+            display: inline-block;
+            padding: 6px 12px;
+            border: 1px solid var(--color-secondary);
+            border-radius: 20px;
+        }
+        
+        .body-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--ink-700);
+            margin-bottom: 20px;
+        }
+        
+        .body-text-large {
+            font-size: 22px;
+            line-height: 1.7;
+            color: var(--ink-700);
+            margin-bottom: 24px;
+        }
+        
+        /* Flow Diagram Styles */
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .flow-box {
+            background: var(--surface-50);
+            border: 2px solid var(--border-100);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        .flow-box:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-elev-2);
+        }
+        
+        .flow-box.highlight {
+            border-color: var(--color-accent);
+            background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+        }
+        
+        .flow-box.money {
+            border-color: var(--money-green);
+            background: var(--money-green-light);
+        }
+        
+        .flow-box-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .flow-box-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ink-900);
+            margin-bottom: 8px;
+        }
+        
+        .flow-box-subtitle {
+            font-size: 14px;
+            color: var(--ink-500);
+        }
+        
+        .flow-arrow {
+            font-size: 32px;
+            color: var(--color-accent);
+        }
+        
+        .flow-arrow-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--ink-500);
+            text-align: center;
+            display: block;
+            margin-top: -8px;
+        }
+        
+        /* Cards and Grids */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: var(--surface-50);
+            border: 1px solid var(--border-100);
+            border-radius: 16px;
+            padding: 28px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .info-card:hover {
+            box-shadow: var(--shadow-elev-2);
+            transform: translateY(-2px);
+        }
+        
+        .info-card h3 {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--ink-900);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .info-card p {
+            color: var(--ink-700);
+            line-height: 1.6;
+        }
+        
+        /* Callout Boxes */
+        .callout {
+            background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+            border-left: 4px solid var(--color-accent);
+            border-radius: 0 12px 12px 0;
+            padding: 24px 28px;
+            margin: 30px 0;
+        }
+        
+        .callout-title {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--color-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+        
+        .callout p {
+            color: var(--ink-700);
+            font-size: 17px;
+            line-height: 1.6;
+        }
+        
+        /* Money Math Section */
+        .money-math {
+            background: var(--money-green-light);
+            border: 2px solid var(--money-green);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 30px 0;
+        }
+        
+        .money-math h4 {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--money-green);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+        }
+        
+        .math-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            font-family: var(--font-mono);
+            font-size: 18px;
+        }
+        
+        .math-label {
+            color: var(--ink-700);
+            min-width: 200px;
+        }
+        
+        .math-value {
+            color: var(--money-green);
+            font-weight: 600;
+        }
+        
+        .math-divider {
+            width: 100%;
+            height: 2px;
+            background: var(--money-green);
+            opacity: 0.3;
+            margin: 20px 0;
+        }
+        
+        /* Timeline */
+        .timeline {
+            position: relative;
+            margin: 40px 0;
+            padding-left: 40px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-100);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 32px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 6px;
+            width: 16px;
+            height: 16px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--color-accent);
+        }
+        
+        .timeline-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ink-900);
+            margin-bottom: 8px;
+        }
+        
+        .timeline-content {
+            color: var(--ink-700);
+            line-height: 1.6;
+        }
+        
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 30px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-elev-2);
+        }
+        
+        .comparison-table th {
+            background: var(--ink-900);
+            color: white;
+            font-family: var(--font-heading);
+            font-weight: 500;
+            padding: 20px 24px;
+            text-align: left;
+        }
+        
+        .comparison-table td {
+            background: white;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-100);
+            color: var(--ink-700);
+        }
+        
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .comparison-table tr:hover td {
+            background: var(--surface-50);
+        }
+        
+        /* Highlights */
+        .osmosis-highlight {
+            background: var(--brand-gradient);
+            color: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin: 40px 0;
+            text-align: center;
+        }
+        
+        .osmosis-highlight h3 {
+            font-family: var(--font-heading);
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+        
+        .osmosis-highlight p {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* Quiz/Interactive Section */
+        .quiz-section {
+            background: var(--surface-50);
+            border: 1px solid var(--border-100);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 30px 0;
+        }
+        
+        .quiz-question {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            color: var(--ink-900);
+            margin-bottom: 24px;
+        }
+        
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .quiz-option {
+            background: white;
+            border: 2px solid var(--border-100);
+            border-radius: 12px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+        
+        .quiz-option:hover {
+            border-color: var(--color-accent);
+            background: #F8FAFF;
+        }
+        
+        .quiz-option.selected {
+            border-color: var(--color-accent);
+            background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+        }
+        
+        /* Key Insight */
+        .key-insight {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            background: var(--warning-orange-light);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        
+        .key-insight-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+        
+        .key-insight-content h4 {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            color: var(--warning-orange);
+            margin-bottom: 8px;
+        }
+        
+        .key-insight-content p {
+            color: var(--ink-700);
+            line-height: 1.5;
+        }
+        
+        /* Two Column Layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        
+        @media (max-width: 900px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="slide-content" style="text-align: center;">
+                <div class="section-pill">Osmosis Team Primer</div>
+                <h1 class="hero-headline">
+                    Allocators 101<br>
+                    <span class="hero-headline-bold">How LPs Think and Decide</span>
+                </h1>
+                <p class="body-text-large" style="max-width: 780px; margin: 30px auto;">
+                    Who holds the money, what they are solving for, and how they actually choose managers-so every Osmosis conversation is grounded in the allocator reality.
+                </p>
+                <div style="margin-top: 60px; font-family: var(--font-mono); color: var(--ink-500); font-size: 14px;">
+                    Arrow keys or buttons below to navigate →
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Why This Exists -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Context</div>
+                <h2 class="section-header">Why This Exists</h2>
+                
+                <p class="body-text-large">
+                    The capital markets primer zoomed out (allocators → asset managers → real-world investments). This deck zooms all the way into the allocator side of the table.
+                </p>
+                
+                <div class="card-grid" style="margin-top: 24px;">
+                    <div class="info-card" style="border-color: var(--color-accent);">
+                        <h3>5 Questions We Must Answer Fast</h3>
+                        <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 16px;">
+                            <li>Who are they actually serving?</li>
+                            <li>What problem are they solving for?</li>
+                            <li>How do they set goals?</li>
+                            <li>What do they report and to whom?</li>
+                            <li>How much risk can they really take, and why?</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3>Why It Matters</h3>
+                        <p>When we can answer those five in seconds, our capital formation conversations get sharper: we speak their mandate language, not ours.</p>
+                        <p style="margin-top: 12px; font-style: italic; color: var(--ink-500);">This deck is the allocator cheat sheet for Osmosis teams.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: What Is an Allocator? -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Definition</div>
+                <h2 class="section-header">What Is an Allocator, Really?</h2>
+                
+                <div class="callout" style="margin-top: 0;">
+                    <div class="callout-title">Working Definition</div>
+                    <p style="font-size: 20px; font-weight: 500; color: var(--ink-900);">
+                        An allocator is an institution (or family) that stewards a pool of capital on behalf of someone else and decides which asset managers get to run slices of that capital.
+                    </p>
+                </div>
+                
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Key Characteristics</h3>
+                        <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 16px;">
+                            <li>They are fiduciaries first-obligation to beneficiaries and stakeholders.</li>
+                            <li>They pick managers and strategies more than individual securities or deals.</li>
+                            <li>They think in decades, even with short-term politics around them.</li>
+                            <li>They live inside governance machines: boards, ICs, consultants, regulators.</li>
+                        </ul>
+                    </div>
+                    <div class="info-card" style="border-color: var(--color-accent);">
+                        <h3>GP/LP Translation</h3>
+                        <p>In GP/LP language from the capital markets primer, allocators are the LPs. They provide capital and hire GPs to put it to work.</p>
+                        <p style="margin-top: 12px; font-size: 14px; color: var(--ink-500);">Remember: every allocator choice is a manager selection choice.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: The Allocator Job -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Mandate</div>
+                <h2 class="section-header">The Allocator's Job in One Sentence</h2>
+
+                <div class="callout" style="margin-top: 0;">
+                    <div class="callout-title">Core Mandate</div>
+                    <p style="font-size: 22px; font-weight: 500; color: var(--ink-900);">
+                        Turn a pool of promises into a portfolio that can keep those promises-with acceptable risk and defensible process.
+                    </p>
+                </div>
+
+                <div class="two-col" style="margin-top: 20px;">
+                    <div class="info-card">
+                        <h3>Promises They Must Keep</h3>
+                        <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 16px;">
+                            <li>Public pensions: pay a check every month for life.</li>
+                            <li>Endowments & foundations: fund a university or mission forever.</li>
+                            <li>Insurance general accounts: meet claims and satisfy regulators.</li>
+                            <li>Sovereign funds & foreign pensions: deliver prosperity and retirement security.</li>
+                            <li>Family & multi-family offices: grow and protect wealth across generations.</li>
+                        </ul>
+                    </div>
+                    <div class="info-card" style="border-color: var(--color-accent);">
+                        <h3>Two Parts of the Job</h3>
+                        <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 16px;">
+                            <li><strong>Keep the promises:</strong> liability-aware, risk-constrained portfolio construction.</li>
+                            <li><strong>Defensible process:</strong> if challenged, show a sane path from information to decision.</li>
+                        </ul>
+                        <p style="margin-top: 12px; color: var(--color-accent); font-size: 15px; font-weight: 600;">Osmosis plugs into part two: surfacing spoken inputs (IC meetings, consultant remarks, CIO interviews) before they hit databases.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: US Public Plans -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Allocator Families</div>
+                <h2 class="section-header">US Public Plans</h2>
+
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Who They Are</h3>
+                        <p>State and local retirement systems plus public university regents (CalPERS, CalSTRS, TRS Texas, UC Regents, etc.).</p>
+                        <p style="margin-top: 12px; font-size: 14px; color: var(--ink-500);">Stakeholders: teachers, firefighters, state/city workers, public university systems; taxpayers, legislators, unions, rating agencies, media.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Obligations</h3>
+                        <p>Pay lifetime, often inflation-linked benefits on time. Maintain funded status (assets vs liabilities). Follow open-meeting and public records laws. Demonstrate prudent-person behavior under scrutiny.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Goals & Pacing</h3>
+                        <p>Return target framed as a discount rate (roughly 6.5-7.0%). Explicit policy portfolios and pacing plans for private markets to hit target allocations.</p>
+                    </div>
+                    <div class="info-card" style="border-color: var(--color-accent); background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);">
+                        <h3>Reporting & Signal</h3>
+                        <p>Among the most transparent allocators: board agendas, IC books, staff memos, video/audio. Minutes show manager line-ups, consultant recommendations, pacing, risk debates.</p>
+                        <p style="margin-top: 12px; color: var(--color-accent); font-weight: 600;">Prime Osmosis territory: we can see exactly who they consider and why, often within hours.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Risk Posture</h3>
+                        <p>Long-term horizon but political and career risk are real. Favor scaled, established managers with defined emerging manager buckets. Portfolios must survive recessions and headlines.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Taft-Hartley Plans -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Allocator Families</div>
+                <h2 class="section-header">Taft-Hartley / Multi-Employer Plans</h2>
+
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Who They Are</h3>
+                        <p>Union and industry pension plans (construction trades, teamsters, electrical workers, etc.). Stakeholders include union members, beneficiaries, union leadership, and employer sponsors.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Obligations</h3>
+                        <p>Keep the fund solvent and avoid critical-and-declining status. Balance union politics and fiduciary duty (often labor-friendly strategies).</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Transparency</h3>
+                        <p>Varies. Many publish minutes and some meeting materials, but with less depth/standardization than big state plans. Still enough to see manager searches and pacing themes.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Risk Posture</h3>
+                        <p>Similar liability profile to public pensions but smaller and more concentrated. Often rely heavily on consultants and manager-of-managers because staff is lean.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Endowments & Foundations -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Allocator Families</div>
+                <h2 class="section-header">Endowments, Foundations, Mission Investors</h2>
+
+                <p class="body-text">Covers private university endowments, public university systems, private foundations, operating foundations/NGOs/faith-based investors, and hospital systems.</p>
+
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>Stakeholders</h3>
+                        <p>Universities: students, faculty, future generations, donors. Foundations: grantees, communities, boards. Faith-based/NGOs: mission and congregations. Hospitals: patients and operations.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Obligations</h3>
+                        <p>Maintain perpetual or very long-term capital while funding annual spending rules (~4-5% of AUM). Align investments with mission and values (ESG, exclusions, impact).</p>
+                    </div>
+                </div>
+
+                <div class="two-col" style="margin-top: 24px;">
+                    <div class="info-card">
+                        <h3>Goals & Risk</h3>
+                        <p>Real return lens: CPI + 4-5% after fees. Comfortable with higher alternatives allocations (40-60%+ for top endowments). Sophisticated debates on manager selection alpha vs beta and illiquidity premia.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Transparency & Posture</h3>
+                        <p>Public university systems: often transparent with board books and recordings. Private universities/private foundations: selective (annual reports, 990s). NGOs/faith-based/hospitals: mixed. Generally higher tolerance for illiquidity/volatility; focused on manager quality, alignment, edge.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Insurance and Corporate Pensions -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Allocator Families</div>
+                <h2 class="section-header">Insurance General Accounts & Corporate Pensions</h2>
+
+                <div class="two-col">
+                    <div class="info-card" style="border-color: var(--color-accent);">
+                        <h3>Insurance General Accounts</h3>
+                        <p>Stakeholders: policyholders, regulators (NAIC), rating agencies, shareholders. Obligations: match long-dated liabilities and maintain capital ratios/ratings. Goal: maximize spread between investment yield and credited rates under capital rules.</p>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--ink-500);">Transparency: statutory filings, earnings calls, NAIC schedules; some CIO commentary, fewer deep IC records.</p>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--ink-500);">Risk posture: return-per-unit-capital is king; heavy fixed income and structured products; alternatives skew to capital-efficient yield (private credit, real estate, infrastructure) vs high-volatility equity.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Corporate DB Pensions</h3>
+                        <p>Stakeholders: corporate CFO/board, employees/retirees, shareholders. Obligations: close funding gap without blowing up earnings volatility.</p>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--ink-500);">Goals: often de-risking-LDI hedges, reduce equity risk, annuitize or offload to insurers.</p>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--ink-500);">Transparency: 10-Ks, 5500 filings, some public commentary; rarely detailed IC minutes.</p>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--ink-500);">Risk posture: conservative and increasingly liability-hedged; tactical alternatives; CFO-driven dynamics.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Foreign Pensions & SWFs -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Allocator Families</div>
+                <h2 class="section-header">Foreign Pensions & Sovereign Wealth Funds</h2>
+
+                <div class="card-grid">
+                    <div class="info-card">
+                        <h3>Who They Are</h3>
+                        <p>Canadian plans (CPP Investments, Ontario Teachers'), Dutch/APG, UK USS, AustralianSuper, plus sovereign funds like NBIM (Norway), GIC, Temasek, ADIA, PIF.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Obligations</h3>
+                        <p>Preserve and grow national wealth or retirement capital across multi-generational horizons. Some SWFs diversify commodity dependence into financial wealth.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Goals & Risk</h3>
+                        <p>Many run sophisticated internal portfolios and also allocate to external GPs. Risk varies: NBIM leans broad global beta with ESG overlays; GIC/Temasek/Canadian plans are heavy in private markets and direct deals. They are very large check writers.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Transparency</h3>
+                        <p>Wide range. NBIM and several Canadian/European plans are highly transparent (reports, hearings, CIO interviews). Gulf and some Asian SWFs are far more opaque with only occasional commentary.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Family & Multi-Family Offices -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Allocator Families</div>
+                <h2 class="section-header">Family Offices & Multi-Family Offices</h2>
+
+                <div class="two-col">
+                    <div class="info-card">
+                        <h3>Who They Are</h3>
+                        <p>Single-family offices (Cascade, MSD, Soros) and multi-family offices (Bessemer Trust, Pitcairn, etc.). Stakeholders are families, often a patriarch/matriarch, next-gen leadership, and an IC.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Obligations</h3>
+                        <p>Preserve and grow wealth across generations. Manage tax, concentration (core operating companies or big public stakes), and family politics. Fund philanthropy, lifestyle spending, and sometimes operating businesses.</p>
+                    </div>
+                </div>
+
+                <div class="two-col" style="margin-top: 24px;">
+                    <div class="info-card">
+                        <h3>Goals & Risk</h3>
+                        <p>Extremely idiosyncratic: some are ultra-conservative, others operate like mini endowments with heavy PE/VC. Often prefer co-invests and direct deals leveraging their network.</p>
+                    </div>
+                    <div class="info-card" style="border-color: var(--color-secondary);">
+                        <h3>Transparency</h3>
+                        <p>Among the least transparent allocators. Public signals are sparse-occasional conference remarks or press. We often infer via advisors, multi-family offices, and GP relationships.</p>
+                        <p style="margin-top: 10px; color: var(--color-secondary); font-size: 14px; font-weight: 600;">Important but low-signal for Osmosis; focus on their advisors and networks.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Defining Goals -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">How They Set Targets</div>
+                <h2 class="section-header">How Allocators Define Goals and Success</h2>
+
+                <div class="card-grid" style="margin-top: 10px;">
+                    <div class="info-card">
+                        <h3>Core Questions</h3>
+                        <ol style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 16px; padding-left: 20px;">
+                            <li>What are our liabilities or spending needs?</li>
+                            <li>What is the required return (discount rate or real-return target)?</li>
+                            <li>What is our risk budget (volatility, drawdown, illiquidity)?</li>
+                            <li>What constraints do we have (regulation, policy, reputation, capacity)?</li>
+                        </ol>
+                    </div>
+                    <div class="info-card">
+                        <h3>Policy Portfolio in Practice</h3>
+                        <p>Answers roll into target allocations by asset class, pacing plans for private markets, and risk limits (tracking error, leverage, concentration).</p>
+                        <p style="margin-top: 12px; font-size: 15px; color: var(--ink-500);">Everything is framed through: can we meet liabilities/spending within risk limits?</p>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <div class="callout-title">The Spoken Edge</div>
+                    <p>Changes are almost always spoken before they are written: "We are thinking about increasing private credit from 5% to 8%," "We want more emerging managers in infrastructure," "We are pausing new VC commitments for 12-18 months." Osmosis is built to catch those spoken shifts first.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Governance & Decision-Making -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Process</div>
+                <h2 class="section-header">Governance, Decision-Making, Gatekeepers</h2>
+
+                <div class="two-col">
+                    <div class="info-card" style="border-color: var(--color-accent);">
+                        <h3>Common Structure</h3>
+                        <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 16px;">
+                            <li><strong>Board / Regents / Trustees</strong>: set policy, approve big commitments, meet quarterly.</li>
+                            <li><strong>Investment committee</strong>: subset of board plus staff; debate manager line-ups, pacing, approvals.</li>
+                            <li><strong>Staff investment team</strong>: CIO, deputies, PMs, analysts; underwrite managers and manage relationships.</li>
+                            <li><strong>Consultants & OCIOs</strong>: non-discretionary advice or full discretion.</li>
+                            <li><strong>Product allocators (MoM, FoF, MFOs)</strong>: multi-manager products for smaller LPs.</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3>The Decision Journey</h3>
+                        <ol style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 16px; padding-left: 20px;">
+                            <li>Signal appears (peers, conferences, consultants, Osmosis intel).</li>
+                            <li>Initial screen: fit to policy, pacing, capacity.</li>
+                            <li>Diligence: meetings, data requests, on-sites, references.</li>
+                            <li>Staff and consultant memo with recommendation.</li>
+                            <li>IC discussion-the meeting that matters.</li>
+                            <li>Vote/approval: sized and slotted into pipeline.</li>
+                            <li>Documentation and reporting back to boards/databases.</li>
+                        </ol>
+                        <p style="margin-top: 10px; color: var(--color-accent); font-size: 14px; font-weight: 600;">We focus on IC and consultant stages where mandates are won or lost.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Transparency Spectrum -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Signals</div>
+                <h2 class="section-header">Transparency & Reporting: Where the Signals Live</h2>
+
+                <div class="card-grid">
+                    <div class="info-card" style="border-color: var(--money-green);">
+                        <h3>High Transparency</h3>
+                        <p>US public plans (state/local pensions, some Taft-Hartley, public university regents) plus some foreign plans. Publish board/IC books, agendas, and often audio/video. We can see manager line-ups, consultant recommendations, pacing, risk debates.</p>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--money-green); font-weight: 600;">Osmosis: build near-real-time radar with speaker-attributed quotes and alerts within hours.</p>
+                    </div>
+                    <div class="info-card" style="border-color: var(--warning-orange);">
+                        <h3>Medium Transparency</h3>
+                        <p>Consultants and OCIOs (views appear in board books). Large private endowments and foundations (speeches, panels, letters). Insurance general accounts and corporate pensions (earnings calls, filings, CIO interviews). Manager-of-managers and MFOs (whitepapers, events).</p>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--warning-orange); font-weight: 600;">Osmosis: lean on events, interviews, and consultant content for signals.</p>
+                    </div>
+                    <div class="info-card" style="border-color: var(--color-secondary);">
+                        <h3>Low Transparency</h3>
+                        <p>Family offices and some SWFs/faith-based investors/NGOs rarely publish detailed meetings. Signals are sparse and indirect.</p>
+                        <p style="margin-top: 10px; font-size: 14px; color: var(--color-secondary); font-weight: 600;">Osmosis: track advisors, counterparties, and platforms where they occasionally appear.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Risk Map -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Risk Posture</div>
+                <h2 class="section-header">Risk & Illiquidity Map</h2>
+
+                <div class="card-grid" style="margin-top: 10px;">
+                    <div class="info-card">
+                        <h3>High Risk / High Illiquidity</h3>
+                        <p>Elite university endowments, some foundations, some SWFs, some family offices. Higher PE/VC/real assets allocations, more concentrated bets, more emerging manager appetite.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Moderate Risk / High Illiquidity</h3>
+                        <p>Large public pensions, foreign pensions, church/healthcare systems. Big private markets programs with heavier governance and consultant involvement.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Low-Moderate Risk / Low-Moderate Illiquidity</h3>
+                        <p>Insurance general accounts, corporate DBs in de-risking mode. Focus on yield, capital efficiency, and risk-based capital constraints.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Idiosyncratic / Context-Dependent</h3>
+                        <p>Family offices, MFOs, faith-based groups, some NGOs. Posture is as much about people (CIO, patriarch, board chair) as allocator type.</p>
+                    </div>
+                </div>
+
+                <div class="key-insight">
+                    <div class="key-insight-icon">🎯</div>
+                    <div class="key-insight-content">
+                        <h4>How Capital Formation Maps It</h4>
+                        <p>This pension cannot be first close; board will not go first on a new strategy. This endowment will take more risk if we show edge and alignment. This insurer cares less about 25% IRR and more about stable, capital-efficient yield. We want the same instant instincts when an allocator name hits an alert.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Allocator Universe Part 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Cheat Sheet</div>
+                <h2 class="section-header">Allocator Universe: Quick Sketches (1-10)</h2>
+
+                <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+                    <div class="info-card">
+                        <h3>1. US Public Plans</h3>
+                        <p>Retirement assets for public employees; very public process. Obligations: pensions, funded status, satisfy boards/legislators. Transparency: very high-signal engines for Osmosis.</p>
+                        <p style="margin-top: 8px; font-size: 13px; color: var(--ink-500);">Osmosis note: top priority; many of our best alerts and wins start here.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>2. Consultants</h3>
+                        <p>Advise allocators on asset mix and manager selection; write the memos. Not allocators, but gatekeepers. Transparency via board books and presentations.</p>
+                        <p style="margin-top: 8px; font-size: 13px; color: var(--ink-500);">Osmosis note: one consultant view can make or break a fundraise.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>3. OCIOs</h3>
+                        <p>Act as outsourced CIOs with discretion to allocate. They wield allocator power across multiple clients.</p>
+                        <p style="margin-top: 8px; font-size: 13px; color: var(--ink-500);">Osmosis note: high leverage; one OCIO relationship opens a portfolio of LPs.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>4. Public University Regents / Endowments</h3>
+                        <p>Invest public university assets; often publish books/audio like pensions. Obligations: support operations and long-term growth. Transparency similar to public plans with more endowment-style risk appetite.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>5. Taft-Hartley Plans</h3>
+                        <p>Union/industry pension plans. Obligations: negotiated pension promises plus union politics. Consultant-heavy; medium transparency.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>6. Asset Managers (GPs)</h3>
+                        <p>Compete for mandates; present to allocators. Not allocators-they are our customers. We help them see who is buying what and what consultants/allocators say about their strategy and competitors.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>7. Manager of Managers / FoFs</h3>
+                        <p>Package multi-manager products; product allocators for smaller LPs. Provide diversification and access.</p>
+                        <p style="margin-top: 8px; font-size: 13px; color: var(--ink-500);">Osmosis note: distribution layer into many smaller, opaque LPs.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>8. Private University Endowments</h3>
+                        <p>Large, sophisticated portfolios heavy in alternatives. Obligations: perpetual capital and spending. Transparency: medium-low (selective), but CIOs speak at conferences.</p>
+                        <p style="margin-top: 8px; font-size: 13px; color: var(--ink-500);">Osmosis note: high-signal when they do speak; tastemakers other allocators watch.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>9. Foundations (Private)</h3>
+                        <p>Invest philanthropic endowments. Transparency low-medium (990-PF data, occasional reports/talks). Smaller volume of public meetings.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>10. Insurance General Accounts</h3>
+                        <p>Invest insurer balance sheets with ALM constraints. Obligations: meet claims, satisfy regulators, protect ratings.</p>
+                        <p style="margin-top: 8px; font-size: 13px; color: var(--ink-500);">Osmosis note: growing importance in private credit and structured products; signals via earnings calls and industry events.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: Allocator Universe Part 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Cheat Sheet</div>
+                <h2 class="section-header">Allocator Universe: Quick Sketches (11-19)</h2>
+
+                <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+                    <div class="info-card">
+                        <h3>11. Corporate Pensions (DB)</h3>
+                        <p>Sponsor defined-benefit plans and de-risk over time. Transparency is low; clues in filings and earnings. More interesting via consultants, OCIOs, and events.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>12. Foreign Pensions (ex-US)</h3>
+                        <p>Retirement assets abroad; often large and sophisticated. Transparency medium and country-dependent.</p>
+                        <p style="margin-top: 8px; font-size: 13px; color: var(--ink-500);">Osmosis note: important check writers; signals in global conferences and some hearings.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>13. Sovereign Wealth Funds</h3>
+                        <p>State-owned investment funds (oil wealth, FX reserves, etc.). Transparency generally low with selective disclosures.</p>
+                        <p style="margin-top: 8px; font-size: 13px; color: var(--ink-500);">Osmosis note: when they speak, it is big directional signals (e.g., upping infra/credit/tech by billions).</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>14. Family Offices</h3>
+                        <p>Invest a single family's wealth; highly bespoke and low transparency.</p>
+                        <p style="margin-top: 8px; font-size: 13px; color: var(--ink-500);">Osmosis note: triangulate via GPs and multi-family offices.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>15. Multi-Family Offices (MFOs)</h3>
+                        <p>Manage pooled wealth for multiple families; behave like boutique allocators. Aggregate decisions for otherwise invisible families.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>16. Foundations/NGOs (Operating)</h3>
+                        <p>Mission-driven portfolios for operating NGOs and charities. Transparency low; occasional mission-investing conferences.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>17. Faith-Based Investors / Church Pensions</h3>
+                        <p>Invest on behalf of religious organizations with values screens. Thematic barometer for ESG/values-driven trends.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>18. Healthcare Systems / Hospital Endowments</h3>
+                        <p>Manage investment pools for hospitals and health systems. Mission-sensitive with medium check sizes; increasingly active in alternatives.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>19. Municipal Treasuries & Cash Pools</h3>
+                        <p>Invest short-duration operating cash. Allocators, but typically not mandate-scale for private funds.</p>
+                        <p style="margin-top: 8px; font-size: 13px; color: var(--ink-500);">Osmosis note: lower priority for mandate hunting; more relevant for short-term or cash products.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Sales Motion -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="section-pill">Osmosis Motion</div>
+                <h2 class="section-header">What This Means for Osmosis</h2>
+
+                <div class="two-col">
+                    <div class="info-card" style="border-color: var(--color-accent);">
+                        <h3>Mental Model for the Team</h3>
+                        <ol style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 16px; padding-left: 20px;">
+                            <li>What promises are they trying to keep?</li>
+                            <li>Who do they answer to (board, regulator, taxpayers, family)?</li>
+                            <li>How transparent are they (live radar vs occasional pings)?</li>
+                            <li>What is their likely risk and illiquidity posture?</li>
+                            <li>Who are their gatekeepers (consultants, OCIOs, MFOs)?</li>
+                        </ol>
+                    </div>
+                    <div class="info-card">
+                        <h3>Product Edge</h3>
+                        <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 16px;">
+                            <li>Real-time alerts when ICs and CIOs talk about pacing, strategy shifts, manager preferences.</li>
+                            <li>Speaker-attributed quotes that become openers: "Here is what your CIO said on Tuesday..."</li>
+                            <li>Watchlists and routes by plan type, strategy, check size to surface the right allocators for each rep.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card-grid" style="margin-top: 24px;">
+                    <div class="info-card">
+                        <h3>How Capital Formation Uses It</h3>
+                        <ul style="margin-top: 12px; color: var(--ink-700); line-height: 1.8; font-size: 16px;">
+                            <li>Senior IR/Heads of Capital Formation: prioritize funds/strategies to push now based on who is in market; tailor narratives to allocator constraints.</li>
+                            <li>Associates/RMs: build lead lists of allocators actively discussing their strategy this week; prep meetings with exact quotes and IC context; map influence networks (which consultant drives which allocator).</li>
+                        </ul>
+                    </div>
+                    <div class="osmosis-highlight" style="text-align: left; margin: 0;">
+                        <h3 style="margin-bottom: 12px;">Speed Is the Advantage</h3>
+                        <p style="opacity: 1;">We turn spoken allocator decisions into alerts within hours, not quarters. That is how our customers become first in the room with the right angle and win nine-figure mandates before they hit legacy databases.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Story in 3 Lines -->
+        <div class="slide">
+            <div class="slide-content" style="text-align: center;">
+                <div class="section-pill">Wrap Up</div>
+                <h2 class="section-header">The Allocator Story in 3 Lines</h2>
+
+                <div style="max-width: 850px; margin: 0 auto; text-align: left;">
+                    <p class="body-text-large" style="margin-bottom: 28px;">
+                        Allocators are fiduciaries turning promises into portfolios. Their constraints-liabilities, politics, regulation, mission-explain how they invest.
+                    </p>
+                    <p class="body-text-large" style="margin-bottom: 28px;">
+                        Different allocator families see the world differently: public pensions, endowments, insurers, SWFs, and family offices all have distinct goals, risk appetites, and transparency levels.
+                    </p>
+                    <p class="body-text-large">
+                        Their most important decisions are spoken before they are written. Osmosis captures those conversations in real time and turns them into the signals our customers use to win mandates faster.
+                    </p>
+                </div>
+
+                <div style="margin-top: 60px;">
+                    <div class="section-pill" style="background: var(--brand-gradient); color: white; border: none;">Now you get the LP table. Go sell. 🚀</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-controls">
+            <button class="nav-btn" onclick="previousSlide()" id="prevBtn">← Previous</button>
+            <div class="slide-indicator">
+                <span id="currentSlide">1</span> / <span id="totalSlides">0</span>
+            </div>
+            <button class="nav-btn" onclick="nextSlide()" id="nextBtn">Next →</button>
+        </div>
+    </div>
+    
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('totalSlides').textContent = totalSlides;
+        
+        function showSlide(index) {
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            if (index >= 0 && index < totalSlides) {
+                slides[index].classList.add('active');
+                slides[index].scrollTop = 0;
+                currentSlideIndex = index;
+                document.getElementById('currentSlide').textContent = index + 1;
+                
+                document.getElementById('prevBtn').disabled = index === 0;
+                document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+        
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            } else if (e.key >= '1' && e.key <= '9') {
+                const slideNum = parseInt(e.key, 10);
+                if (slideNum <= totalSlides) {
+                    showSlide(slideNum - 1);
+                }
+            }
+        });
+        
+        showSlide(0);
+    </script>
+</body>
+</html>
