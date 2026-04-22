@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Evals — Osmosis Engineering Review, No. 01</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@300;400;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+            --font-serif: "IBM Plex Serif", Georgia, serif;
+            --font-mono: "IBM Plex Mono", monospace;
+            --font-heading: "IBM Plex Sans Condensed", system-ui, sans-serif;
+
+            --ink-0: #030308;
+            --ink-900: #0F1226;
+            --purple-deep: #1D054F;
+            --accent-blue: #1A2FFB;
+            --accent-orange: #F8613C;
+            --money-green: #1C8A49;
+            --danger-red: #DC2626;
+
+            --cream: #FBFAF7;
+            --warm-gray: #F5F3EE;
+            --cool-gray: #ECEFF3;
+            --peach: #FEF3C7;
+            --rose: #FDE2E2;
+            --sage: #D9F0E1;
+            --ice: #E0EBFF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+            background: var(--ink-0);
+        }
+
+        /* ========== MAGAZINE CONTAINER ========== */
+        .magazine {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+        }
+
+        .magazine::-webkit-scrollbar { display: none; }
+
+        .page {
+            width: 100vw;
+            height: 100vh;
+            flex-shrink: 0;
+            scroll-snap-align: start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ========== TYPE ANCHORS ========== */
+        .anchor {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            line-height: 0.82;
+            letter-spacing: -0.06em;
+            font-size: clamp(160px, 22vw, 400px);
+        }
+
+        .anchor-md {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            line-height: 0.88;
+            letter-spacing: -0.04em;
+            font-size: clamp(100px, 14vw, 220px);
+        }
+
+        .display {
+            font-family: var(--font-heading);
+            font-weight: 300;
+            line-height: 0.92;
+            letter-spacing: -0.04em;
+            font-size: clamp(56px, 8vw, 128px);
+        }
+
+        .display-bold {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            line-height: 0.92;
+            letter-spacing: -0.04em;
+            font-size: clamp(56px, 8vw, 128px);
+        }
+
+        .kicker {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+        }
+
+        .meta {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        .body-xl {
+            font-family: var(--font-serif);
+            font-size: 22px;
+            line-height: 1.45;
+            font-weight: 400;
+        }
+
+        .body-md {
+            font-family: var(--font-serif);
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        .body-sm {
+            font-family: var(--font-sans);
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        /* ========== PAGE 1: COVER ========== */
+        .cover {
+            background: var(--ink-0);
+            color: var(--cream);
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+        }
+
+        .cover-main {
+            padding: 60px 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(251, 250, 247, 0.15);
+        }
+
+        .cover-side {
+            background: var(--purple-deep);
+            padding: 60px 36px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .cover-title {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: clamp(120px, 19vw, 360px);
+            line-height: 0.8;
+            letter-spacing: -0.06em;
+        }
+
+        .cover-title em {
+            font-style: normal;
+            color: var(--accent-blue);
+        }
+
+        .cover-dek {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: clamp(20px, 2.2vw, 34px);
+            line-height: 1.3;
+            max-width: 860px;
+            color: rgba(251, 250, 247, 0.85);
+        }
+
+        .cover-side .meta { color: rgba(251, 250, 247, 0.7); }
+
+        .issue-num {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 96px;
+            line-height: 1;
+            color: var(--cream);
+        }
+
+        .issue-date {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(251, 250, 247, 0.7);
+            margin-top: 8px;
+        }
+
+        /* ========== PAGE 2: THESIS (SPLIT) ========== */
+        .thesis {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .thesis-left {
+            background: var(--ink-900);
+            color: var(--cream);
+            padding: 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .thesis-left .display {
+            font-size: clamp(52px, 6.5vw, 104px);
+        }
+
+        .thesis-left em {
+            color: var(--accent-orange);
+            font-style: normal;
+        }
+
+        .thesis-right {
+            background: var(--cream);
+            color: var(--ink-900);
+            padding: 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .thesis-right-header .kicker { color: var(--accent-orange); }
+
+        .thesis-right h2 {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 48px;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            margin: 24px 0 32px;
+        }
+
+        /* ========== PAGE 3: BIG STAT 60-80% ========== */
+        .stat-time {
+            background: var(--accent-blue);
+            color: var(--cream);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .stat-time-header {
+            grid-column: 1 / -1;
+            padding: 60px 72px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .stat-time-anchor {
+            grid-column: 1 / -1;
+            align-self: center;
+            padding: 0 72px;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+        }
+
+        .stat-time-anchor .anchor { font-size: clamp(220px, 32vw, 560px); }
+
+        .stat-time-anchor .pct {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            font-size: clamp(120px, 16vw, 280px);
+            margin-left: 0.1em;
+        }
+
+        .stat-time-footer {
+            grid-column: 1 / -1;
+            padding: 0 72px 60px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: end;
+        }
+
+        .stat-time-footer h3 {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 36px;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            max-width: 540px;
+        }
+
+        .stat-time-footer p {
+            font-family: var(--font-serif);
+            font-size: 18px;
+            line-height: 1.5;
+            color: rgba(251, 250, 247, 0.85);
+            max-width: 460px;
+        }
+
+        /* ========== PAGE 4: REACTIVE vs EVAL-DRIVEN (SPLIT) ========== */
+        .loops {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .loop-half {
+            padding: 60px 64px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .loop-bad {
+            background: var(--rose);
+            color: var(--ink-900);
+        }
+
+        .loop-bad .kicker { color: var(--danger-red); }
+
+        .loop-good {
+            background: var(--sage);
+            color: var(--ink-900);
+            border-left: 2px solid var(--ink-900);
+        }
+
+        .loop-good .kicker { color: var(--money-green); }
+
+        .loop-half h2 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: clamp(56px, 6vw, 96px);
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+            margin: 24px 0;
+        }
+
+        .loop-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-top: 32px;
+        }
+
+        .loop-step {
+            display: flex;
+            gap: 20px;
+            align-items: baseline;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(15, 18, 38, 0.15);
+        }
+
+        .loop-step:last-child { border-bottom: none; }
+
+        .loop-step-num {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 28px;
+        }
+
+        .loop-bad .loop-step-num { color: var(--danger-red); }
+        .loop-good .loop-step-num { color: var(--money-green); }
+
+        .loop-step-text {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: clamp(22px, 2.4vw, 34px);
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+        }
+
+        /* ========== PAGE 5: CRITIQUE SHADOWING 2×2 QUADRANTS ========== */
+        .quadrants {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .quad {
+            padding: 48px 56px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .quad-1 { background: var(--peach); }
+        .quad-2 { background: #FCE7BC; border-left: 2px solid var(--ink-900); }
+        .quad-3 { background: #FAD59F; border-top: 2px solid var(--ink-900); }
+        .quad-4 { background: #F7C278; border-left: 2px solid var(--ink-900); border-top: 2px solid var(--ink-900); }
+
+        .quad-number {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: clamp(120px, 14vw, 200px);
+            line-height: 0.8;
+            letter-spacing: -0.04em;
+            color: var(--ink-900);
+        }
+
+        .quad-title {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: clamp(22px, 2.2vw, 32px);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-top: 12px;
+        }
+
+        .quad-body {
+            font-family: var(--font-serif);
+            font-size: 15px;
+            line-height: 1.5;
+            max-width: 380px;
+            color: var(--ink-700, #30364D);
+        }
+
+        .quad-header {
+            position: absolute;
+            top: 48px;
+            left: 56px;
+            right: 56px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .quad-kicker {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-orange);
+        }
+
+        /* ========== PAGE 6: BIG PULL QUOTE DARK ========== */
+        .pullquote {
+            background: var(--purple-deep);
+            color: var(--cream);
+            display: grid;
+            grid-template-columns: 1fr 4fr 1fr;
+            grid-template-rows: 80px 1fr 80px;
+            padding: 0;
+        }
+
+        .pullquote-tl { border-right: 1px solid rgba(251, 250, 247, 0.15); border-bottom: 1px solid rgba(251, 250, 247, 0.15); padding: 32px; display: flex; align-items: center; }
+        .pullquote-tm { border-bottom: 1px solid rgba(251, 250, 247, 0.15); padding: 32px; display: flex; align-items: center; justify-content: center; }
+        .pullquote-tr { border-left: 1px solid rgba(251, 250, 247, 0.15); border-bottom: 1px solid rgba(251, 250, 247, 0.15); padding: 32px; display: flex; align-items: center; justify-content: flex-end; }
+
+        .pullquote-body {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 100px;
+        }
+
+        .pullquote-text {
+            font-family: var(--font-heading);
+            font-weight: 300;
+            font-size: clamp(48px, 6.5vw, 110px);
+            line-height: 0.98;
+            letter-spacing: -0.035em;
+            max-width: 1400px;
+            text-align: left;
+        }
+
+        .pullquote-text em {
+            color: var(--accent-orange);
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        .pullquote-text::before {
+            content: '“';
+            color: var(--accent-orange);
+            margin-right: 0.05em;
+        }
+
+        .pullquote-text::after {
+            content: '”';
+            color: var(--accent-orange);
+        }
+
+        .pullquote-bl { grid-column: 1 / -1; border-top: 1px solid rgba(251, 250, 247, 0.15); padding: 32px 72px; display: flex; justify-content: space-between; align-items: center; }
+
+        .pullquote .meta { color: rgba(251, 250, 247, 0.6); }
+
+        /* ========== PAGE 7: 6 RAG EVALS GRID (2×3) ========== */
+        .rag-grid {
+            background: var(--warm-gray);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: auto 1fr 1fr;
+        }
+
+        .rag-header {
+            grid-column: 1 / -1;
+            padding: 48px 72px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 2px solid var(--ink-900);
+        }
+
+        .rag-header h2 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: clamp(64px, 8vw, 120px);
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+        }
+
+        .rag-header p {
+            font-family: var(--font-serif);
+            font-size: 16px;
+            line-height: 1.4;
+            max-width: 320px;
+            text-align: right;
+            color: var(--ink-700, #30364D);
+        }
+
+        .rag-cell {
+            padding: 36px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(15, 18, 38, 0.1);
+            border-bottom: 1px solid rgba(15, 18, 38, 0.1);
+            position: relative;
+        }
+
+        .rag-cell:nth-child(3n+1) { background: var(--warm-gray); }
+        .rag-cell:nth-child(3n+2) { background: #F0EEE8; }
+        .rag-cell:nth-child(3n+3) { background: #EAE7DF; }
+
+        .rag-cell.primary {
+            background: var(--accent-blue);
+            color: var(--cream);
+        }
+
+        .rag-cell.primary:nth-of-type(2) { background: #1E3EFF; }
+        .rag-cell.primary:nth-of-type(3) { background: #2E55FF; }
+
+        .rag-formula {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: clamp(80px, 10vw, 150px);
+            line-height: 0.85;
+            letter-spacing: -0.04em;
+        }
+
+        .rag-formula-pipe {
+            color: var(--accent-orange);
+            font-weight: 300;
+        }
+
+        .rag-cell.primary .rag-formula-pipe {
+            color: var(--accent-orange);
+        }
+
+        .rag-cell-name {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 22px;
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+            margin-top: 8px;
+        }
+
+        .rag-cell-body {
+            font-family: var(--font-serif);
+            font-size: 14px;
+            line-height: 1.45;
+            margin-top: 12px;
+            color: rgba(15, 18, 38, 0.75);
+        }
+
+        .rag-cell.primary .rag-cell-body { color: rgba(251, 250, 247, 0.85); }
+
+        .rag-cell-tier {
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            opacity: 0.6;
+        }
+
+        /* ========== PAGE 8: PASS@K vs PASS^K (DARK SPLIT) ========== */
+        .pass-compare {
+            background: var(--ink-900);
+            color: var(--cream);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .pass-header {
+            grid-column: 1 / -1;
+            padding: 48px 72px;
+            border-bottom: 1px solid rgba(251, 250, 247, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .pass-header h2 {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: clamp(40px, 4.5vw, 68px);
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+
+        .pass-cell {
+            padding: 60px 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .pass-cell.left { border-right: 1px solid rgba(251, 250, 247, 0.15); }
+
+        .pass-formula {
+            font-family: var(--font-mono);
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--accent-orange);
+            margin-bottom: 20px;
+        }
+
+        .pass-label {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 36px;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            margin-bottom: 32px;
+        }
+
+        .pass-number {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: clamp(180px, 22vw, 340px);
+            line-height: 0.82;
+            letter-spacing: -0.05em;
+        }
+
+        .pass-cell.left .pass-number { color: var(--money-green); }
+        .pass-cell.right .pass-number { color: var(--danger-red); }
+
+        .pass-caption {
+            font-family: var(--font-serif);
+            font-size: 17px;
+            line-height: 1.5;
+            color: rgba(251, 250, 247, 0.75);
+            margin-top: 28px;
+            max-width: 420px;
+        }
+
+        .pass-footer {
+            grid-column: 1 / -1;
+            padding: 28px 72px;
+            border-top: 1px solid rgba(251, 250, 247, 0.15);
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 18px;
+            color: rgba(251, 250, 247, 0.8);
+            text-align: center;
+        }
+
+        /* ========== PAGE 9: THREE GRADER TYPES (3-COL FULL HEIGHT) ========== */
+        .graders {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            background: var(--cool-gray);
+        }
+
+        .grader {
+            padding: 60px 48px;
+            display: flex;
+            flex-direction: column;
+            color: var(--ink-900);
+        }
+
+        .grader-1 { background: var(--ice); }
+        .grader-2 { background: var(--accent-blue); color: var(--cream); border-left: 2px solid var(--ink-900); border-right: 2px solid var(--ink-900); }
+        .grader-3 { background: #F4B99F; }
+
+        .grader-1 .kicker { color: var(--accent-blue); }
+        .grader-2 .kicker { color: var(--accent-orange); }
+        .grader-3 .kicker { color: var(--danger-red); }
+
+        .grader-number {
+            font-family: var(--font-mono);
+            font-weight: 500;
+            font-size: 12px;
+            letter-spacing: 0.15em;
+            opacity: 0.6;
+        }
+
+        .grader-title {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: clamp(48px, 5.5vw, 82px);
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+            margin: 24px 0 40px;
+        }
+
+        .grader-section {
+            margin-top: 32px;
+        }
+
+        .grader-section-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 10px;
+            opacity: 0.75;
+        }
+
+        .grader-list {
+            list-style: none;
+            font-family: var(--font-serif);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .grader-list li {
+            padding: 4px 0;
+        }
+
+        .grader-list li::before {
+            content: '—';
+            margin-right: 8px;
+            opacity: 0.5;
+        }
+
+        .grader-footer {
+            margin-top: auto;
+            padding-top: 32px;
+            border-top: 1px solid rgba(15, 18, 38, 0.15);
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .grader-2 .grader-footer { border-top-color: rgba(251, 250, 247, 0.2); }
+
+        /* ========== PAGE 10: THE 10 STEPS (5x2 GRID) ========== */
+        .steps {
+            background: var(--cream);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: auto 1fr 1fr;
+        }
+
+        .steps-header {
+            grid-column: 1 / -1;
+            padding: 44px 72px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 2px solid var(--ink-900);
+        }
+
+        .steps-header h2 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: clamp(56px, 6.5vw, 96px);
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+        }
+
+        .steps-header p {
+            font-family: var(--font-serif);
+            font-size: 15px;
+            max-width: 360px;
+            text-align: right;
+            color: var(--ink-700, #30364D);
+        }
+
+        .step-cell {
+            padding: 24px 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(15, 18, 38, 0.1);
+            border-bottom: 1px solid rgba(15, 18, 38, 0.1);
+            color: var(--ink-900);
+            position: relative;
+        }
+
+        .step-cell:nth-child(even) { background: #F5F3ED; }
+        .step-cell:nth-child(5n+1) { background: #EFEBE1; }
+        .step-cell:nth-child(5n+3) { background: #F8F6F0; }
+        .step-cell:nth-child(5n+5) { background: #ECE8DC; }
+        .step-cell.accent { background: var(--accent-blue); color: var(--cream); }
+
+        .step-num {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: clamp(80px, 8vw, 130px);
+            line-height: 0.8;
+            letter-spacing: -0.05em;
+            color: var(--ink-900);
+        }
+
+        .step-cell.accent .step-num { color: var(--cream); }
+
+        .step-title {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 17px;
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+            margin-top: 8px;
+        }
+
+        .step-body {
+            font-family: var(--font-serif);
+            font-size: 12px;
+            line-height: 1.4;
+            color: rgba(15, 18, 38, 0.7);
+            margin-top: 6px;
+        }
+
+        .step-cell.accent .step-body { color: rgba(251, 250, 247, 0.85); }
+
+        .step-source {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent-orange);
+            margin-top: 10px;
+        }
+
+        .step-cell.accent .step-source { color: var(--cream); opacity: 0.8; }
+
+        /* ========== PAGE 11: BACK COVER ========== */
+        .back-cover {
+            background: var(--ink-0);
+            color: var(--cream);
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .back-header {
+            grid-column: 1 / -1;
+            padding: 48px 72px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid rgba(251, 250, 247, 0.15);
+        }
+
+        .back-side {
+            padding: 48px 56px 48px 72px;
+            background: var(--purple-deep);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .back-side h3 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: clamp(48px, 5.5vw, 80px);
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+        }
+
+        .back-side h3 em {
+            font-style: normal;
+            color: var(--accent-orange);
+        }
+
+        .back-side p {
+            font-family: var(--font-serif);
+            font-size: 17px;
+            line-height: 1.5;
+            color: rgba(251, 250, 247, 0.85);
+            margin-top: 24px;
+        }
+
+        .back-list {
+            padding: 40px 72px 40px 48px;
+            columns: 2;
+            column-gap: 48px;
+            column-rule: 1px solid rgba(251, 250, 247, 0.15);
+            overflow: hidden;
+        }
+
+        .back-item {
+            break-inside: avoid;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(251, 250, 247, 0.1);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .back-item:first-child { padding-top: 0; }
+
+        .back-item-author {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent-orange);
+            margin-bottom: 3px;
+        }
+
+        .back-item-title {
+            font-family: var(--font-serif);
+            color: var(--cream);
+        }
+
+        .back-item a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .back-item a:hover .back-item-title { color: var(--accent-orange); }
+
+        .back-footer {
+            grid-column: 1 / -1;
+            padding: 28px 72px;
+            border-top: 1px solid rgba(251, 250, 247, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: rgba(251, 250, 247, 0.6);
+        }
+
+        .back-footer a { color: inherit; text-decoration: none; }
+        .back-footer a:hover { color: var(--accent-orange); }
+
+        /* ========== NAV DOTS ========== */
+        .nav-dots {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            padding: 10px 16px;
+            background: rgba(10, 10, 15, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 999px;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(251, 250, 247, 0.3);
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            transition: all 0.25s ease;
+        }
+
+        .nav-dot:hover { background: rgba(251, 250, 247, 0.6); }
+
+        .nav-dot.active {
+            background: var(--accent-orange);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .nav-hint {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 100;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: rgba(251, 250, 247, 0.5);
+            padding: 10px 14px;
+            background: rgba(10, 10, 15, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 999px;
+            pointer-events: none;
+        }
+
+        .nav-hint.dark-page { color: rgba(15, 18, 38, 0.6); background: rgba(251, 250, 247, 0.7); }
+    </style>
+</head>
+<body>
+
+    <div class="magazine" id="magazine">
+
+        <!-- PAGE 1: COVER (DARK) -->
+        <section class="page cover" data-tone="dark">
+            <div class="cover-main">
+                <div>
+                    <div class="kicker" style="color: var(--accent-orange);">Osmosis Engineering Review&nbsp;·&nbsp;A Primer</div>
+                </div>
+                <div>
+                    <div class="cover-title">AI<br><em>Evals.</em></div>
+                </div>
+                <div>
+                    <div class="cover-dek">How to actually measure AI systems — eleven essential sources collapsed into one worldview you can apply this week.</div>
+                </div>
+            </div>
+            <div class="cover-side">
+                <div>
+                    <div class="meta">No.</div>
+                    <div class="issue-num">01</div>
+                    <div class="issue-date">April 2026</div>
+                </div>
+                <div>
+                    <div class="meta" style="margin-bottom: 8px;">Curated From</div>
+                    <div style="font-family: var(--font-serif); font-size: 13px; line-height: 1.5; color: rgba(251, 250, 247, 0.8);">Hamel Husain · Shreya Shankar · Eugene Yan · Jason Liu · Anthropic · Andrew Ng · Hugo Bowne-Anderson · Stefan Krawczyk · Aishwarya Naresh Reganti · Doug Turnbull</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 2: THESIS (SPLIT) -->
+        <section class="page thesis" data-tone="dark">
+            <div class="thesis-left">
+                <div class="display">Evals are not a metric. They're a <em>practice.</em></div>
+                <div class="meta" style="color: rgba(251, 250, 247, 0.5); margin-top: 48px;">Thesis I</div>
+            </div>
+            <div class="thesis-right">
+                <div class="thesis-right-header">
+                    <div class="kicker">The Work Is The Looking</div>
+                    <h2>Every source, same worldview.</h2>
+                    <p class="body-md" style="color: var(--ink-700, #30364D);">Look at your data. Define binary failure modes with a domain expert. Align scalable graders to that expert's judgment. The metric dashboard is a downstream artifact.</p>
+                    <p class="body-md" style="color: var(--ink-700, #30364D); margin-top: 20px;">Generic metrics like ROUGE and BERTScore feel wrong for the same reason unit tests without assertions feel wrong — they don't encode what you care about. LLM-as-judge isn't a substitute for human judgment. It's a scaling technique for judgment you've already made.</p>
+                </div>
+                <div class="meta" style="color: var(--ink-500, #5A6178);">Synthesis · 11 sources</div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: BIG STAT 60-80% -->
+        <section class="page stat-time" data-tone="dark">
+            <div class="stat-time-header">
+                <div class="kicker" style="color: var(--cream);">Stat&nbsp;·&nbsp;The Budget</div>
+                <div class="meta" style="color: rgba(251, 250, 247, 0.7);">Page 03</div>
+            </div>
+            <div class="stat-time-anchor">
+                <div class="anchor">60<span style="font-weight: 300;">–</span>80</div>
+                <div class="pct">%</div>
+            </div>
+            <div class="stat-time-footer">
+                <h3>of serious LLM project time should go to error analysis.</h3>
+                <p>Not building dashboards. Not wiring frameworks. Reading traces, categorizing failures, computing distributions. If you're spending less, you're probably building the wrong thing. <em>— Hamel Husain, across 30+ implementations.</em></p>
+            </div>
+        </section>
+
+        <!-- PAGE 4: REACTIVE vs EVAL-DRIVEN (SPLIT) -->
+        <section class="page loops">
+            <div class="loop-half loop-bad">
+                <div>
+                    <div class="kicker">The Trap</div>
+                    <h2>The Reactive Loop.</h2>
+                    <div class="loop-steps">
+                        <div class="loop-step"><div class="loop-step-num">01</div><div class="loop-step-text">Ship on vibes</div></div>
+                        <div class="loop-step"><div class="loop-step-num">02</div><div class="loop-step-text">User complains</div></div>
+                        <div class="loop-step"><div class="loop-step-num">03</div><div class="loop-step-text">Fix one bug</div></div>
+                        <div class="loop-step"><div class="loop-step-num">04</div><div class="loop-step-text">Break another</div></div>
+                        <div class="loop-step"><div class="loop-step-num">05</div><div class="loop-step-text">POC purgatory</div></div>
+                    </div>
+                </div>
+                <div class="meta" style="color: var(--danger-red);">Flying Blind</div>
+            </div>
+            <div class="loop-half loop-good">
+                <div>
+                    <div class="kicker">The Escape</div>
+                    <h2>Eval-Driven.</h2>
+                    <div class="loop-steps">
+                        <div class="loop-step"><div class="loop-step-num">01</div><div class="loop-step-text">Look at data</div></div>
+                        <div class="loop-step"><div class="loop-step-num">02</div><div class="loop-step-text">Binary pass/fail</div></div>
+                        <div class="loop-step"><div class="loop-step-num">03</div><div class="loop-step-text">Aligned judge</div></div>
+                        <div class="loop-step"><div class="loop-step-num">04</div><div class="loop-step-text">Error analysis</div></div>
+                        <div class="loop-step"><div class="loop-step-num">05</div><div class="loop-step-text">Ship in days</div></div>
+                    </div>
+                </div>
+                <div class="meta" style="color: var(--money-green);">Hill To Climb</div>
+            </div>
+        </section>
+
+        <!-- PAGE 5: CRITIQUE SHADOWING 2×2 -->
+        <section class="page quadrants">
+            <div class="quad quad-1">
+                <div class="quad-header">
+                    <div class="quad-kicker">Method · Critique Shadowing</div>
+                    <div class="meta" style="color: var(--ink-700, #30364D);">Hamel Husain</div>
+                </div>
+                <div>
+                    <div class="quad-number">01</div>
+                    <div class="quad-title">Find THE domain expert.</div>
+                    <div class="quad-body">Singular. A lawyer, a pension consultant, a psychologist. Not a committee. Not you-as-proxy unless you're genuinely qualified.</div>
+                </div>
+                <div></div>
+            </div>
+            <div class="quad quad-2">
+                <div></div>
+                <div>
+                    <div class="quad-number">02</div>
+                    <div class="quad-title">Binary pass/fail + critique.</div>
+                    <div class="quad-body">Not 1–5. One question: did the AI achieve the desired outcome? Critiques explain reasoning and become few-shot examples for the judge.</div>
+                </div>
+                <div></div>
+            </div>
+            <div class="quad quad-3">
+                <div></div>
+                <div>
+                    <div class="quad-number">03</div>
+                    <div class="quad-title">Align the judge iteratively.</div>
+                    <div class="quad-body">Embed critiques as few-shot. Measure precision &amp; recall against the expert — not accuracy. Iterate until agreement exceeds 85%.</div>
+                </div>
+                <div></div>
+            </div>
+            <div class="quad quad-4">
+                <div></div>
+                <div>
+                    <div class="quad-number">04</div>
+                    <div class="quad-title">Error-analyze root causes.</div>
+                    <div class="quad-body">Segment error rates by feature / scenario / persona. Classify failures. Count buckets. Attack the biggest. Repeat, forever.</div>
+                </div>
+                <div></div>
+            </div>
+        </section>
+
+        <!-- PAGE 6: BIG PULL QUOTE DARK -->
+        <section class="page pullquote" data-tone="dark">
+            <div class="pullquote-tl"><div class="meta">Pull Quote · VI</div></div>
+            <div class="pullquote-tm"></div>
+            <div class="pullquote-tr"><div class="meta">Hamel Husain</div></div>
+            <div class="pullquote-body">
+                <div class="pullquote-text">If you're passing <em>100%</em> of your evals, your eval isn't stressing your system.</div>
+            </div>
+            <div class="pullquote-bl">
+                <div class="meta">The 70% Rule</div>
+                <div class="meta">Capability evals should start low and climb. Regression evals stay near 100.</div>
+            </div>
+        </section>
+
+        <!-- PAGE 7: 6 RAG EVALS GRID -->
+        <section class="page rag-grid">
+            <div class="rag-header">
+                <div>
+                    <div class="kicker" style="color: var(--accent-orange);">Framework · Jason Liu</div>
+                    <h2>Only 6 RAG Evals.</h2>
+                </div>
+                <p>Three variables — question, context, answer — yield exactly six conditional relationships. Every RAG failure is one of these breaking. No hidden variables.</p>
+            </div>
+            <div class="rag-cell primary">
+                <div class="rag-cell-tier">Tier 2 · Primary</div>
+                <div>
+                    <div class="rag-formula">C<span class="rag-formula-pipe"> | </span>Q</div>
+                </div>
+                <div>
+                    <div class="rag-cell-name">Context Relevance</div>
+                    <div class="rag-cell-body">Does retrieval find passages that address the question? If retrieval fails, generation is doomed.</div>
+                </div>
+            </div>
+            <div class="rag-cell primary">
+                <div class="rag-cell-tier">Tier 2 · Primary</div>
+                <div>
+                    <div class="rag-formula">A<span class="rag-formula-pipe"> | </span>C</div>
+                </div>
+                <div>
+                    <div class="rag-cell-name">Faithfulness</div>
+                    <div class="rag-cell-body">Does the answer restrict itself to claims supported by retrieved context? The hallucination check.</div>
+                </div>
+            </div>
+            <div class="rag-cell primary">
+                <div class="rag-cell-tier">Tier 2 · Primary</div>
+                <div>
+                    <div class="rag-formula">A<span class="rag-formula-pipe"> | </span>Q</div>
+                </div>
+                <div>
+                    <div class="rag-cell-name">Answer Relevance</div>
+                    <div class="rag-cell-body">Does the answer actually address what was asked? The end-to-end UX metric.</div>
+                </div>
+            </div>
+            <div class="rag-cell">
+                <div class="rag-cell-tier">Tier 3 · Advanced</div>
+                <div>
+                    <div class="rag-formula">C<span class="rag-formula-pipe"> | </span>A</div>
+                </div>
+                <div>
+                    <div class="rag-cell-name">Context Coverage</div>
+                    <div class="rag-cell-body">Does context contain everything needed to support every claim in the answer?</div>
+                </div>
+            </div>
+            <div class="rag-cell">
+                <div class="rag-cell-tier">Tier 3 · Advanced</div>
+                <div>
+                    <div class="rag-formula">Q<span class="rag-formula-pipe"> | </span>C</div>
+                </div>
+                <div>
+                    <div class="rag-cell-name">Answerability</div>
+                    <div class="rag-cell-body">Given this context, is the question answerable at all? If not — refuse.</div>
+                </div>
+            </div>
+            <div class="rag-cell">
+                <div class="rag-cell-tier">Tier 3 · Advanced</div>
+                <div>
+                    <div class="rag-formula">Q<span class="rag-formula-pipe"> | </span>A</div>
+                </div>
+                <div>
+                    <div class="rag-cell-name">Self-Containment</div>
+                    <div class="rag-cell-body">Can the question be inferred from the answer alone? Matters for quoted / async contexts.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 8: PASS@K vs PASS^K (DARK SPLIT) -->
+        <section class="page pass-compare" data-tone="dark">
+            <div class="pass-header">
+                <div>
+                    <div class="kicker" style="color: var(--accent-orange);">Agents · Reliability</div>
+                    <h2>Same agent.<br>Different metric.</h2>
+                </div>
+                <div class="meta" style="color: rgba(251, 250, 247, 0.5);">75% per-trial success · k = 10</div>
+            </div>
+            <div class="pass-cell left">
+                <div class="pass-formula">pass@k</div>
+                <div class="pass-label">At least one<br>attempt succeeds.</div>
+                <div class="pass-number">~100%</div>
+                <div class="pass-caption">Rises with k. Use when one correct solution is enough — coding, brainstorming, research. <em>More shots on goal.</em></div>
+            </div>
+            <div class="pass-cell right">
+                <div class="pass-formula">pass^k</div>
+                <div class="pass-label">All attempts<br>succeed.</div>
+                <div class="pass-number">5.6%</div>
+                <div class="pass-caption">Falls with k. Use for customer-facing agents where users expect reliability every time. <em>Consistency is harder.</em></div>
+            </div>
+            <div class="pass-footer">The same 75% agent looks heroic or broken depending on which metric you chose.</div>
+        </section>
+
+        <!-- PAGE 9: THREE GRADER TYPES -->
+        <section class="page graders">
+            <div class="grader grader-1">
+                <div>
+                    <div class="grader-number">Grader Type 01</div>
+                    <div class="kicker">Fast · Cheap · Brittle</div>
+                    <div class="grader-title">Code-based.</div>
+                </div>
+                <div class="grader-section">
+                    <div class="grader-section-label">Methods</div>
+                    <ul class="grader-list">
+                        <li>String match, regex, fuzzy</li>
+                        <li>Static analysis (lint, type)</li>
+                        <li>Outcome state checks</li>
+                        <li>Tool-call verification</li>
+                        <li>Transcript metrics</li>
+                    </ul>
+                </div>
+                <div class="grader-footer">Prefer deterministic graders where possible. They tell you exactly why something failed.</div>
+            </div>
+            <div class="grader grader-2">
+                <div>
+                    <div class="grader-number" style="color: rgba(251, 250, 247, 0.7);">Grader Type 02</div>
+                    <div class="kicker">Flexible · Scalable · Needs Calibration</div>
+                    <div class="grader-title">Model-based.</div>
+                </div>
+                <div class="grader-section">
+                    <div class="grader-section-label" style="color: rgba(251, 250, 247, 0.75);">Methods</div>
+                    <ul class="grader-list">
+                        <li>Rubric scoring</li>
+                        <li>Pairwise comparison</li>
+                        <li>Reference-based evaluation</li>
+                        <li>Multi-judge consensus (PoLL)</li>
+                        <li>Natural-language assertions</li>
+                    </ul>
+                </div>
+                <div class="grader-footer">Flexible, but non-deterministic. Must be calibrated against human experts — otherwise you're measuring the judge, not the system.</div>
+            </div>
+            <div class="grader grader-3">
+                <div>
+                    <div class="grader-number">Grader Type 03</div>
+                    <div class="kicker">Gold Standard · Slow · Expensive</div>
+                    <div class="grader-title">Human.</div>
+                </div>
+                <div class="grader-section">
+                    <div class="grader-section-label">Methods</div>
+                    <ul class="grader-list">
+                        <li>SME review</li>
+                        <li>Crowdsourced judgment</li>
+                        <li>Spot-check sampling</li>
+                        <li>A/B testing</li>
+                        <li>Inter-annotator agreement</li>
+                    </ul>
+                </div>
+                <div class="grader-footer">Use judiciously, mostly to calibrate the other two. You can't ship an agent evaluated only by humans — but you can't trust one evaluated without them.</div>
+            </div>
+        </section>
+
+        <!-- PAGE 10: THE 10 STEPS -->
+        <section class="page steps">
+            <div class="steps-header">
+                <div>
+                    <div class="kicker" style="color: var(--accent-orange);">The Unified Model</div>
+                    <h2>Ten steps, all eleven sources.</h2>
+                </div>
+                <p>Every source in the bibliography collapses to this loop. If you internalize only one thing — make it this.</p>
+            </div>
+
+            <div class="step-cell">
+                <div class="step-num">01</div>
+                <div>
+                    <div class="step-title">Look at your data.</div>
+                    <div class="step-body">Categorize real failures in a spreadsheet. Count buckets.</div>
+                    <div class="step-source">Ng · Hamel</div>
+                </div>
+            </div>
+            <div class="step-cell">
+                <div class="step-num">02</div>
+                <div>
+                    <div class="step-title">Find THE expert.</div>
+                    <div class="step-body">Singular. Not a committee. Not leadership. Not you.</div>
+                    <div class="step-source">Hamel</div>
+                </div>
+            </div>
+            <div class="step-cell accent">
+                <div class="step-num">03</div>
+                <div>
+                    <div class="step-title">Binary pass/fail + critique.</div>
+                    <div class="step-body">Not Likert. Critiques become few-shot examples for your judge.</div>
+                    <div class="step-source">Hamel · Reganti · Anthropic</div>
+                </div>
+            </div>
+            <div class="step-cell">
+                <div class="step-num">04</div>
+                <div>
+                    <div class="step-title">Align a scalable grader.</div>
+                    <div class="step-body">Code assertion or LLM judge calibrated on the critiques.</div>
+                    <div class="step-source">Hamel · Yan</div>
+                </div>
+            </div>
+            <div class="step-cell">
+                <div class="step-num">05</div>
+                <div>
+                    <div class="step-title">Measure precision &amp; recall.</div>
+                    <div class="step-body">On held-out data. Never accuracy — it lies when classes imbalance.</div>
+                    <div class="step-source">Hamel · Yan</div>
+                </div>
+            </div>
+            <div class="step-cell">
+                <div class="step-num">06</div>
+                <div>
+                    <div class="step-title">Error-analyze root causes.</div>
+                    <div class="step-body">Cluster. Count. Attack the biggest bucket first.</div>
+                    <div class="step-source">Ng · Hamel</div>
+                </div>
+            </div>
+            <div class="step-cell">
+                <div class="step-num">07</div>
+                <div>
+                    <div class="step-title">For RAG: 6 relationships.</div>
+                    <div class="step-body">Trace every failure to Q, C, or A conditional on another.</div>
+                    <div class="step-source">Liu</div>
+                </div>
+            </div>
+            <div class="step-cell accent">
+                <div class="step-num">08</div>
+                <div>
+                    <div class="step-title">For agents: grade outcomes.</div>
+                    <div class="step-body">Not paths. Use pass@k or pass^k depending on reliability requirement.</div>
+                    <div class="step-source">Anthropic</div>
+                </div>
+            </div>
+            <div class="step-cell">
+                <div class="step-num">09</div>
+                <div>
+                    <div class="step-title">Read transcripts weekly.</div>
+                    <div class="step-body">Automated metrics lie without ground truth. 10 per week, minimum.</div>
+                    <div class="step-source">Anthropic · Hamel</div>
+                </div>
+            </div>
+            <div class="step-cell">
+                <div class="step-num">10</div>
+                <div>
+                    <div class="step-title">Suite is a living artifact.</div>
+                    <div class="step-body">Every bug becomes an eval case. Every model release triggers a run. Never done.</div>
+                    <div class="step-source">All sources</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 11: BACK COVER (DARK) -->
+        <section class="page back-cover" data-tone="dark">
+            <div class="back-header">
+                <div>
+                    <div class="kicker" style="color: var(--accent-orange);">Further Reading</div>
+                </div>
+                <div class="meta" style="color: rgba(251, 250, 247, 0.6);">Back Cover · Issue 01</div>
+            </div>
+            <div class="back-side">
+                <div>
+                    <div class="kicker" style="color: rgba(251, 250, 247, 0.6); margin-bottom: 24px;">The Eleven Sources</div>
+                    <h3>Read these, in <em>this</em> order.</h3>
+                </div>
+                <p>If you must pick three: Hamel's LLM-as-a-Judge guide (clearest methodology), Anthropic's Demystifying Evals for Agents (best vocabulary), Jason Liu's 6 RAG Evals (most compact mental model). Everything else slots around those.</p>
+            </div>
+            <div class="back-list">
+                <div class="back-item"><a href="https://hamel.dev/blog/posts/llm-judge/" target="_blank"><div class="back-item-author">Hamel Husain</div><div class="back-item-title">Using LLM-as-a-Judge For Evaluation</div></a></div>
+                <div class="back-item"><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank"><div class="back-item-author">Anthropic</div><div class="back-item-title">Demystifying Evals for AI Agents</div></a></div>
+                <div class="back-item"><a href="https://jxnl.co/writing/2025/05/19/there-are-only-6-rag-evals/" target="_blank"><div class="back-item-author">Jason Liu</div><div class="back-item-title">There Are Only 6 RAG Evals</div></a></div>
+                <div class="back-item"><a href="https://eugeneyan.com/writing/llm-evaluators/" target="_blank"><div class="back-item-author">Eugene Yan</div><div class="back-item-title">Evaluating LLM-Evaluators</div></a></div>
+                <div class="back-item"><a href="https://www.decodingai.com/p/escaping-poc-purgatory-evaluation" target="_blank"><div class="back-item-author">Bowne-Anderson &amp; Krawczyk</div><div class="back-item-title">Escaping POC Purgatory</div></a></div>
+                <div class="back-item"><a href="https://www.decodingai.com/p/stop-launching-ai-apps-without-this" target="_blank"><div class="back-item-author">Hugo Bowne-Anderson</div><div class="back-item-title">Stop Launching AI Apps Without This</div></a></div>
+                <div class="back-item"><a href="https://www.decodingai.com/p/the-5-star-lie-you-are-doing-ai-evals" target="_blank"><div class="back-item-author">Aishwarya Naresh Reganti</div><div class="back-item-title">The 5-Star Lie You Are Doing AI Evals</div></a></div>
+                <div class="back-item"><a href="https://www.decodingai.com/p/the-mirage-of-generic-ai-metrics" target="_blank"><div class="back-item-author">Aishwarya Naresh Reganti</div><div class="back-item-title">The Mirage of Generic AI Metrics</div></a></div>
+                <div class="back-item"><a href="https://www.youtube.com/watch?v=e2i6JbU2R-s" target="_blank"><div class="back-item-author">Andrew Ng</div><div class="back-item-title">Carrying Out Error Analysis</div></a></div>
+                <div class="back-item"><a href="https://decodingai.com/t/ai-evals-and-observability" target="_blank"><div class="back-item-author">Decoding AI Series</div><div class="back-item-title">AI Evals &amp; Observability</div></a></div>
+                <div class="back-item"><a href="https://www.youtube.com/watch?v=sEMYSSS6Ims" target="_blank"><div class="back-item-author">Doug Turnbull (adj.)</div><div class="back-item-title">LLM Judges Aren't the Shortcut</div></a></div>
+            </div>
+            <div class="back-footer">
+                <div>Osmosis Engineering Review · No. 01 · April 2026</div>
+                <div><a href="index.html">← Return to Library</a></div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- NAV DOTS -->
+    <nav class="nav-dots" id="navDots" aria-label="Page navigation">
+        <button class="nav-dot active" data-page="0" aria-label="Page 1"></button>
+        <button class="nav-dot" data-page="1" aria-label="Page 2"></button>
+        <button class="nav-dot" data-page="2" aria-label="Page 3"></button>
+        <button class="nav-dot" data-page="3" aria-label="Page 4"></button>
+        <button class="nav-dot" data-page="4" aria-label="Page 5"></button>
+        <button class="nav-dot" data-page="5" aria-label="Page 6"></button>
+        <button class="nav-dot" data-page="6" aria-label="Page 7"></button>
+        <button class="nav-dot" data-page="7" aria-label="Page 8"></button>
+        <button class="nav-dot" data-page="8" aria-label="Page 9"></button>
+        <button class="nav-dot" data-page="9" aria-label="Page 10"></button>
+        <button class="nav-dot" data-page="10" aria-label="Page 11"></button>
+    </nav>
+
+    <div class="nav-hint" id="navHint">← → to navigate</div>
+
+    <script>
+        const magazine = document.getElementById('magazine');
+        const dots = document.querySelectorAll('.nav-dot');
+        const hint = document.getElementById('navHint');
+        const pages = document.querySelectorAll('.page');
+        const totalPages = pages.length;
+
+        let currentPage = 0;
+
+        function scrollToPage(index) {
+            if (index < 0 || index >= totalPages) return;
+            magazine.scrollTo({ left: window.innerWidth * index, behavior: 'smooth' });
+            currentPage = index;
+            updateDots();
+        }
+
+        function updateDots() {
+            dots.forEach((d, i) => d.classList.toggle('active', i === currentPage));
+        }
+
+        // Arrow key navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                scrollToPage(currentPage + 1);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                scrollToPage(currentPage - 1);
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                scrollToPage(0);
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                scrollToPage(totalPages - 1);
+            } else if (e.key >= '1' && e.key <= '9') {
+                e.preventDefault();
+                scrollToPage(parseInt(e.key, 10) - 1);
+            }
+        });
+
+        // Dot click navigation
+        dots.forEach((dot, i) => dot.addEventListener('click', () => scrollToPage(i)));
+
+        // Update active dot on scroll (for trackpad/touch users)
+        let scrollTimeout;
+        magazine.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                const newPage = Math.round(magazine.scrollLeft / window.innerWidth);
+                if (newPage !== currentPage) {
+                    currentPage = newPage;
+                    updateDots();
+                }
+            }, 60);
+        });
+
+        // Handle window resize so scroll position stays on current page
+        window.addEventListener('resize', () => {
+            magazine.scrollTo({ left: window.innerWidth * currentPage, behavior: 'auto' });
+        });
+
+        // Hide hint after first interaction
+        let hintHidden = false;
+        function hideHint() {
+            if (!hintHidden) {
+                hint.style.opacity = '0';
+                hint.style.transition = 'opacity 0.6s ease';
+                hintHidden = true;
+                setTimeout(() => hint.style.display = 'none', 700);
+            }
+        }
+        document.addEventListener('keydown', hideHint, { once: true });
+        magazine.addEventListener('scroll', () => { if (magazine.scrollLeft > 50) hideHint(); }, { once: true });
+        dots.forEach(d => d.addEventListener('click', hideHint, { once: true }));
+    </script>
+
+</body>
+</html>

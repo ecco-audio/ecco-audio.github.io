@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Evals — Osmosis Engineering Review, Issue 01</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Sans+Condensed:wght@300;400;600;700&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+            --font-serif: "IBM Plex Serif", Georgia, serif;
+            --font-mono: "IBM Plex Mono", monospace;
+            --font-heading: "IBM Plex Sans Condensed", system-ui, sans-serif;
+
+            --color-accent: rgb(42, 96, 248);
+            --color-secondary: rgb(248, 97, 60);
+            --color-paper: #FBFAF7;
+            --color-ink: #1A1D26;
+
+            --ink-900: #0F1226;
+            --ink-700: #30364D;
+            --ink-500: #5A6178;
+            --ink-300: #9CA3B5;
+            --border-100: #E5E3DD;
+            --surface-50: #F5F3EE;
+            --rule: #1A1D26;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-serif);
+            color: var(--color-ink);
+            background: var(--color-paper);
+            line-height: 1.65;
+            font-size: 18px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ========== MASTHEAD ========== */
+        .masthead {
+            border-bottom: 2px solid var(--rule);
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .masthead-title {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.08em;
+        }
+
+        .masthead-meta { color: var(--ink-500); }
+
+        /* ========== COVER ========== */
+        .cover {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 100px 40px 80px;
+            text-align: left;
+        }
+
+        .kicker {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--color-secondary);
+            margin-bottom: 32px;
+        }
+
+        .cover-title {
+            font-family: var(--font-heading);
+            font-weight: 300;
+            font-size: 120px;
+            line-height: 0.9;
+            letter-spacing: -0.05em;
+            margin-bottom: 32px;
+            color: var(--ink-900);
+        }
+
+        .cover-title em {
+            font-style: normal;
+            font-weight: 600;
+            color: var(--color-accent);
+        }
+
+        .cover-dek {
+            font-family: var(--font-serif);
+            font-weight: 400;
+            font-style: italic;
+            font-size: 28px;
+            line-height: 1.35;
+            max-width: 720px;
+            color: var(--ink-700);
+            margin-bottom: 56px;
+        }
+
+        .cover-meta {
+            display: flex;
+            gap: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--rule);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--ink-500);
+        }
+
+        .cover-meta strong {
+            display: block;
+            color: var(--ink-900);
+            font-weight: 600;
+            margin-top: 6px;
+            text-transform: none;
+            font-family: var(--font-sans);
+            font-size: 14px;
+            letter-spacing: 0;
+        }
+
+        /* ========== ARTICLE ========== */
+        .article {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 40px 120px;
+        }
+
+        .article p {
+            margin-bottom: 24px;
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        .article p.standfirst {
+            font-size: 22px;
+            line-height: 1.55;
+            font-weight: 400;
+            color: var(--ink-700);
+            margin-bottom: 48px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid var(--border-100);
+        }
+
+        /* Drop cap on section openers */
+        .article .section > p:first-of-type::first-letter {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            color: var(--color-accent);
+            float: left;
+            font-size: 72px;
+            line-height: 0.9;
+            padding: 6px 10px 0 0;
+            margin-top: 4px;
+        }
+
+        .section {
+            margin-top: 72px;
+        }
+
+        .section-number {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--color-secondary);
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            font-size: 44px;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            color: var(--ink-900);
+            margin-bottom: 32px;
+            max-width: 600px;
+        }
+
+        .article em { font-style: italic; }
+
+        .article strong {
+            font-weight: 600;
+            color: var(--ink-900);
+        }
+
+        .article a {
+            color: var(--color-accent);
+            text-decoration: underline;
+            text-decoration-color: var(--border-100);
+            text-underline-offset: 3px;
+        }
+
+        .article a:hover {
+            text-decoration-color: var(--color-accent);
+        }
+
+        /* Pull quotes */
+        .pullquote {
+            margin: 48px -40px;
+            padding: 32px 40px;
+            border-top: 2px solid var(--rule);
+            border-bottom: 2px solid var(--rule);
+            font-family: var(--font-heading);
+            font-weight: 300;
+            font-size: 36px;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            color: var(--ink-900);
+        }
+
+        .pullquote::before {
+            content: '“';
+            font-family: var(--font-serif);
+            color: var(--color-accent);
+            font-size: 72px;
+            line-height: 0;
+            vertical-align: -24px;
+            margin-right: 8px;
+            font-style: italic;
+        }
+
+        .pullquote::after {
+            content: '”';
+            font-family: var(--font-serif);
+            color: var(--color-accent);
+            font-size: 72px;
+            line-height: 0;
+            vertical-align: -24px;
+            margin-left: 4px;
+            font-style: italic;
+        }
+
+        /* Block quotes (for the Shankar paper citation etc.) */
+        blockquote {
+            margin: 32px 0;
+            padding: 4px 0 4px 24px;
+            border-left: 3px solid var(--color-accent);
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 19px;
+            line-height: 1.55;
+            color: var(--ink-700);
+        }
+
+        /* Sidebars / framework boxes */
+        .sidebar {
+            margin: 48px 0;
+            padding: 32px;
+            background: var(--surface-50);
+            border: 1px solid var(--border-100);
+            border-radius: 4px;
+        }
+
+        .sidebar-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--color-secondary);
+            margin-bottom: 8px;
+        }
+
+        .sidebar-title {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 22px;
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+            color: var(--ink-900);
+            margin-bottom: 20px;
+        }
+
+        .sidebar p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+
+        .sidebar p:last-child { margin-bottom: 0; }
+
+        .sidebar-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-list li {
+            font-size: 16px;
+            line-height: 1.55;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-100);
+        }
+
+        .sidebar-list li:last-child { border-bottom: none; }
+
+        .sidebar-list strong {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--color-accent);
+            display: inline-block;
+            min-width: 64px;
+        }
+
+        /* Section rule */
+        .divider {
+            margin: 56px auto;
+            text-align: center;
+            font-family: var(--font-serif);
+            color: var(--ink-300);
+            font-size: 20px;
+            letter-spacing: 1em;
+            padding-left: 1em;
+        }
+
+        .divider::before { content: '* * *'; }
+
+        /* End mark */
+        .endmark {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: var(--color-accent);
+            margin-left: 8px;
+            vertical-align: 2px;
+        }
+
+        /* ========== FURTHER READING ========== */
+        .further-reading {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 40px 60px;
+            border-top: 2px solid var(--rule);
+        }
+
+        .further-reading h3 {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--ink-900);
+            margin-bottom: 24px;
+        }
+
+        .reading-list {
+            list-style: none;
+        }
+
+        .reading-list li {
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border-100);
+            font-size: 15px;
+            line-height: 1.55;
+        }
+
+        .reading-list li:last-child { border-bottom: none; }
+
+        .reading-list .author {
+            font-family: var(--font-sans);
+            color: var(--ink-500);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .reading-list .title {
+            font-family: var(--font-serif);
+            font-weight: 500;
+            color: var(--ink-900);
+        }
+
+        .reading-list a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .reading-list a:hover .title { color: var(--color-accent); }
+
+        /* ========== FOOTNOTES ========== */
+        .footnotes {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 40px 80px;
+            border-top: 1px solid var(--border-100);
+        }
+
+        .footnotes h3 {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--ink-900);
+            margin-bottom: 20px;
+        }
+
+        .footnotes ol {
+            list-style: none;
+            counter-reset: fn;
+        }
+
+        .footnotes li {
+            counter-increment: fn;
+            padding: 10px 0 10px 32px;
+            position: relative;
+            font-family: var(--font-sans);
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--ink-700);
+        }
+
+        .footnotes li::before {
+            content: counter(fn);
+            position: absolute;
+            left: 0;
+            top: 10px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--color-accent);
+        }
+
+        .footnotes a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .footnotes a:hover { text-decoration: underline; }
+
+        sup a {
+            text-decoration: none;
+            color: var(--color-accent);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 11px;
+            padding: 0 2px;
+        }
+
+        sup a:hover { text-decoration: underline; }
+
+        /* ========== COLOPHON ========== */
+        .colophon {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 40px 80px;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--ink-500);
+            border-top: 2px solid var(--rule);
+        }
+
+        .colophon a {
+            color: var(--ink-500);
+            text-decoration: none;
+        }
+
+        .colophon a:hover { color: var(--color-accent); }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 720px) {
+            .masthead { padding: 14px 24px; font-size: 10px; }
+            .cover { padding: 60px 24px 50px; }
+            .cover-title { font-size: 64px; }
+            .cover-dek { font-size: 20px; }
+            .cover-meta { flex-direction: column; gap: 16px; }
+            .article { padding: 32px 24px 80px; }
+            .article p, .article p.standfirst { font-size: 17px; }
+            .article p.standfirst { font-size: 19px; }
+            .section-title { font-size: 32px; }
+            .pullquote { font-size: 24px; margin: 40px -24px; padding: 24px; }
+            .sidebar { padding: 24px; margin: 32px 0; }
+            .further-reading, .footnotes, .colophon { padding: 32px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MASTHEAD -->
+    <div class="masthead">
+        <div class="masthead-title">Osmosis&nbsp;·&nbsp;Engineering Review</div>
+        <div class="masthead-meta">Issue 01&nbsp;·&nbsp;April 2026</div>
+    </div>
+
+    <!-- COVER -->
+    <header class="cover">
+        <div class="kicker">Long Read&nbsp;·&nbsp;18 min</div>
+        <h1 class="cover-title">AI <em>Evals</em></h1>
+        <p class="cover-dek">How to actually measure AI systems — a synthesis of eleven essential sources collapsed into one coherent worldview you can apply this week.</p>
+        <div class="cover-meta">
+            <div>
+                Curated from
+                <strong>Hamel Husain, Shreya Shankar, Eugene Yan, Jason Liu, Anthropic, Andrew Ng, Hugo Bowne-Anderson, Stefan Krawczyk, Aishwarya Naresh Reganti, Doug Turnbull</strong>
+            </div>
+            <div>
+                Filed Under
+                <strong>Engineering&nbsp;·&nbsp;Evaluation&nbsp;·&nbsp;LLMs</strong>
+            </div>
+        </div>
+    </header>
+
+    <!-- ARTICLE BODY -->
+    <article class="article">
+
+        <p class="standfirst">Every day, someone asks the same question phrased eleven different ways: <em>how do I know my AI product is actually working?</em> The answers are scattered across blog posts, papers, YouTube lectures, and newsletters, and most of them arrive sounding like distinct frameworks. They are not. Eleven sources, one worldview.</p>
+
+        <div class="section" id="thesis">
+            <span class="section-number">I&nbsp;·&nbsp;The Thesis</span>
+            <h2 class="section-title">Evals are a practice, not a metric</h2>
+            <p>Every essential source on LLM evaluation is arguing for the same thing: evals are the practice of looking at your data, defining binary failure modes with a domain expert, and aligning scalable graders to that expert's judgment. The metric dashboard is a downstream artifact. The work is the looking.<sup><a href="#fn1">1</a></sup></p>
+            <p>Once that thesis is internalized, the rest of the literature falls into place. Generic metrics like ROUGE and BERTScore feel wrong for the same reason unit tests without assertions feel wrong — they don't encode what you actually care about. LLM-as-judge isn't a substitute for human judgment; it's a scaling technique for judgment you've already made. Evaluation-driven development isn't a new paradigm; it's the application of classical data-science discipline to stochastic systems. RAG and agents get specialized sub-frameworks, but the core move is identical.</p>
+            <p>This piece synthesizes eleven sources into one account, sourced throughout. If you read only three, read Hamel Husain's <em>LLM-as-a-Judge</em> guide,<sup><a href="#fn2">2</a></sup> Anthropic's <em>Demystifying Evals for AI Agents</em>,<sup><a href="#fn3">3</a></sup> and Jason Liu's <em>There Are Only 6 RAG Evals</em>.<sup><a href="#fn4">4</a></sup> Everything else slots around those.</p>
+        </div>
+
+        <div class="pullquote">The metric dashboard is a downstream artifact. The work is the looking.</div>
+
+        <div class="section" id="why">
+            <span class="section-number">II&nbsp;·&nbsp;Why Evals Exist At All</span>
+            <h2 class="section-title">The reactive loop, and the escape from it</h2>
+            <p>The failure mode without evals is a reactive loop. A team ships a feature on the strength of a demo, users start complaining, someone reproduces the bug manually, a fix goes out, nobody knows if anything else regressed. Hugo Bowne-Anderson and Stefan Krawczyk call this <em>POC Purgatory</em>: the demo works, leadership is excited, production is inconsistent, and the system collapses into vibe-based debugging.<sup><a href="#fn5">5</a></sup></p>
+            <p>Anthropic frames the same trap more starkly. Teams without evals cannot distinguish real regressions from stochastic noise, cannot test changes against hundreds of scenarios before shipping, and cannot answer "is the new model better?" without weeks of manual evaluation. When a new frontier model ships, teams with evals evaluate and deploy in days. Teams without evals watch their competitors upgrade while they hand-test.<sup><a href="#fn3">3</a></sup></p>
+            <p>Three compounding benefits are easy to miss because their costs are upfront and their payoffs distributed. First, <strong>eval tasks double as executable product specs</strong>. Two engineers reading the same requirements document will interpret edge cases differently; an eval suite resolves that ambiguity in a form a machine can check. Second, <strong>regression and capability tests come bundled</strong> — any evaluable task is also a regression test. Third, and most underrated, <strong>evals become the highest-bandwidth channel between product and research</strong>. Researchers optimize against something concrete; product people articulate what "better" actually means.</p>
+        </div>
+
+        <div class="section" id="error-analysis">
+            <span class="section-number">III&nbsp;·&nbsp;The Foundational Move</span>
+            <h2 class="section-title">Everything builds on error analysis</h2>
+            <p>Every technique in this article is a tool to scale one move, and the move is as old as classical machine learning. Andrew Ng has taught it for a decade: collect fifty to a hundred failed examples, categorize each one by failure type in a spreadsheet, count the buckets, attack the biggest bucket first.<sup><a href="#fn6">6</a></sup></p>
+            <p>What the LLM era changes is not the move itself but its centrality. Hamel Husain, reflecting on thirty-plus production AI implementations, estimates that <strong>sixty to eighty percent of serious project time should go to error analysis</strong> — reading traces, categorizing failures, computing distributions. Building evaluators, dashboards, and pipelines are downstream. If you're spending less on looking at your data, you're probably building the wrong thing.<sup><a href="#fn7">7</a></sup></p>
+            <p>This is where Hamel's most useful provocation lives. <em>"The real value of an LLM judge is that it tricks people into looking at their data. The judge doesn't create value — the looking does. Potato, potahto."</em> The framing matters because teams keep reaching for automation one step too early. They want an LLM judge before they've read the traces. They want a dashboard before they've categorized the failures. Then they can't figure out why the dashboard doesn't predict quality.</p>
+            <p>The fix is to treat the work as classical data science. Reading traces is exploratory data analysis. Validating a judge against human labels is model evaluation. Building representative test sets is experimental design. These are not novel skills invented for LLMs; they are the skills most LLM teams are missing.<sup><a href="#fn8">8</a></sup></p>
+        </div>
+
+        <div class="section" id="critique-shadowing">
+            <span class="section-number">IV&nbsp;·&nbsp;A Method</span>
+            <h2 class="section-title">Critique Shadowing, in seven steps</h2>
+            <p>The most concrete methodology in the literature is Hamel's seven-step process, which he calls <em>Critique Shadowing</em>. It deserves internalizing because everything else in this article either supports it or is a special case of it.</p>
+            <p><strong>Step one: find the principal domain expert.</strong> Singular, not plural. A lawyer for a legal bot, a pension consultant for an allocator intelligence tool, a psychologist for a mental-health assistant, a senior PM for a customer support agent. Not a committee, not leadership, not you-as-proxy unless you are genuinely qualified. Hamel's most common reason teams fail at evals is that they refused to identify a single expert because they wanted to "satisfy everyone." Satisfying everyone produces metrics nobody trusts.</p>
+            <p><strong>Step two: build a diverse dataset.</strong> The taxonomy Hamel proposes is <em>Features × Scenarios × Personas</em> — generate examples covering each combination. Synthetic data works better than most teams assume; Hex, the data workspace, ships its evaluation system on synthetic queries. The trick is to use an LLM to generate <em>user inputs</em>, then feed those through your real system. Mix synthetic with real production traces. Thirty examples is a reasonable starting point; keep going until new failure modes stop appearing.</p>
+            <p><strong>Step three: direct the domain expert to make binary pass/fail judgments with written critiques.</strong> This is the point where most teams deviate from the method. The expert is not rating on a 1–5 scale. They are deciding one thing — <em>did the AI achieve the desired outcome?</em> — pass or fail. The critique explains their reasoning in enough detail that a new hire could read it and understand the standard. These critiques do double duty: they clarify the expert's own criteria, and they become few-shot examples for the LLM judge built in step five.</p>
+            <p><strong>Step four: fix any obvious errors</strong> surfaced during review before continuing. If the expert finds systemic bugs — the same failure mode across half the examples — stop and fix them. The judge you're building should measure a stable system, not a broken one.</p>
+            <p><strong>Step five: build the LLM judge iteratively.</strong> Write a prompt that includes five to ten of the expert's critiques as few-shot examples. Run it against the same examples the expert graded. Measure agreement. Crucially: <em>do not measure raw accuracy</em>. If five percent of examples fail, an evaluator that passes everything scores 95 percent accuracy and tells you nothing. Measure precision and recall separately. Iterate the prompt until agreement crosses 85–90 percent. On the Honeycomb Query Assistant project, Hamel reached that threshold in three iterations.</p>
+            <p><strong>Step six: error analysis on held-out data.</strong> Once the judge is trusted, run it against fresh production traces. Segment error rates across your dimensions. For each failure, classify by root cause — "Missing User Education," "Authentication Issue," "Poor Context Handling." Count the root causes. Attack the biggest.</p>
+            <p><strong>Step seven: build specialized judges only if needed.</strong> Don't pre-build citation-checkers, hallucination-detectors, groundedness-scorers. Let error analysis tell you where specialized graders earn their complexity. Often a code-based assertion — a regex, a structural check, a state verification — is simpler and sufficient.</p>
+            <p>The process is a loop, not a line. Each iteration surfaces new failure modes, new critiques, new judge refinements. It never ends. But it moves.</p>
+        </div>
+
+        <div class="section" id="criteria-drift">
+            <span class="section-number">V&nbsp;·&nbsp;Criteria Drift</span>
+            <h2 class="section-title">Why the rubric can't come first</h2>
+            <p>One of the most important findings in the evaluation literature is buried in a 2024 paper by Shreya Shankar and collaborators. Titled <em>Who Validates the Validators?</em>, the paper introduces a concept the authors call <em>criteria drift</em>:<sup><a href="#fn9">9</a></sup></p>
+            <blockquote>To grade outputs, people need to externalize and define their evaluation criteria; however, the process of grading outputs helps them to define that very criteria. We dub this phenomenon criteria drift, and it implies that it is impossible to completely determine evaluation criteria prior to human judging of LLM outputs.</blockquote>
+            <p>The practical implication is disruptive. Any methodology that starts with "write a detailed rubric" and ends with "apply the rubric" is doomed, because the rubric is the artifact of the process, not its input. The expert discovers what they actually care about <em>by</em> grading. This is why Hamel's process opens with grading, not with rubric-writing. The rubric emerges.</p>
+            <p>The Honeycomb case study illustrates the second-order effect. Phillip Carter, the domain expert who graded queries generated by Honeycomb's Query Assistant, reported that reviewing the LLM's critiques helped him articulate his own evaluation criteria more clearly. <em>"Seeing how the LLM breaks down its reasoning made me realize I wasn't being consistent about how I judged certain edge cases."</em> The judge surfaced his implicit standards.</p>
+            <p>This inverts the usual framing of LLM-as-judge. The judge is not automating a human task. <strong>The judge is a forcing function for the human to become more consistent.</strong> The value — as Hamel keeps insisting — is not in the automation. It is in the clarification.</p>
+        </div>
+
+        <div class="pullquote">The judge is not automating a human task. The judge is a forcing function for the human to become more consistent.</div>
+
+        <div class="section" id="two-traps">
+            <span class="section-number">VI&nbsp;·&nbsp;Two Traps</span>
+            <h2 class="section-title">Why Likert scales and generic metrics lie</h2>
+            <p>The most common beginner mistake is to ask an LLM to rate each output on a 1–5 scale across eight dimensions, average the scores, and ship a dashboard. Aishwarya Naresh Reganti calls this "the five-star lie," and the reasons it fails are documented across the literature.<sup><a href="#fn10">10</a></sup></p>
+            <p>Likert scales are not actionable. What does a 3 mean? What separates it from a 4? Nobody knows, and no two raters agree. When something scores a 3, you can't say "this failed because…" You can only say "it got a 3."</p>
+            <p>LLM judges cluster on the middle of the scale. On a 1–10 scale, you get a forest of 6s and 7s; on a 1–5 scale, a pile of 3s. The distribution compresses exactly where you need discriminative power. Binary pass/fail cannot compress in the same way — you either did the thing or you didn't.</p>
+            <p>Verbosity bias inflates long answers regardless of quality. The same research — Lianmin Zheng et al.'s MT-Bench paper — documents position bias (LLM judges favor whichever response is shown first in pairwise comparisons, sometimes 50–70 percent of the time) and self-enhancement bias, where judges rate outputs from their own model family higher by up to 25 percent.<sup><a href="#fn11">11</a></sup> Pass/fail judgments are harder to game along any of these axes.</p>
+            <p>The second trap is related: <strong>generic off-the-shelf metrics</strong>. BERTScore, ROUGE, BLEU, cosine similarity, vague rubric dimensions like "helpfulness" or "coherence" — almost none of these correlate with what a domain expert cares about. Eugene Yan's survey of two dozen papers puts the numbers on the table. Human experts agree with each other on summarization tasks at a correlation of 0.80–0.90. LLM judges with humans: 0.30–0.60. Traditional metrics like ROUGE with humans: around 0.30.<sup><a href="#fn12">12</a></sup></p>
+            <p>The failure mode that follows is predictable. A team adopts a framework shipping fifteen pre-built evaluators. The dashboard looks impressive. The metrics don't move when quality actually changes. The team loses faith in evaluation entirely and falls back on vibes.</p>
+            <p>The escape is to reverse the flow. The wrong flow is <em>framework → dashboard → investigation</em>. The right flow is <em>investigation → failure mode → targeted metric</em>. Error analysis surfaces a pattern. You write a binary check for that specific failure. The metric then moves when quality moves, because it measures a real thing.</p>
+            <p>One heuristic worth remembering, from Hamel's evals FAQ: <em>if you're passing 100 percent of your evals, your eval isn't stressing your system.</em> A 70 percent pass rate on meaningful tasks is more valuable than 95 percent on generic ones. Capability evals should start low and climb. Regression evals stay near 100. Both are necessary.</p>
+        </div>
+
+        <aside class="sidebar">
+            <div class="sidebar-label">Sidebar · Decision Tree</div>
+            <div class="sidebar-title">When and how to use LLM-as-judge, after Eugene Yan</div>
+            <p><strong>Objective task</strong> (factuality, toxicity, instruction-following) → direct scoring. A response is faithful or it isn't; comparing two doesn't help.</p>
+            <p><strong>Subjective task</strong> (tone, persuasiveness, style) → pairwise comparison. More stable, smaller gap to human judgment.</p>
+            <p><strong>Binary or Likert?</strong> Collapse to binary whenever possible. Binary → precision, recall, Cohen's κ. Likert → Spearman's ρ or Kendall's τ (Cohen's κ over-penalizes ordinal data).</p>
+            <p><strong>Dev-time vs. production?</strong> Dev-time: largest model, Chain-of-Thought, few-shot examples. Production: fine-tune a small classifier, bootstrap labels from the dev-time judge.</p>
+            <p><strong>One empirical surprise.</strong> A panel of smaller judges (Command-R + GPT-3.5 + Haiku, majority vote) can beat a single GPT-4 judge at ~1/7th the cost. Verga et al. call this <em>PoLL</em>.<sup><a href="#fn13">13</a></sup></p>
+        </aside>
+
+        <div class="section" id="rag">
+            <span class="section-number">VII&nbsp;·&nbsp;RAG</span>
+            <h2 class="section-title">There are only six RAG evals</h2>
+            <p>Jason Liu's contribution to the literature is the most compact mental model for retrieval-augmented generation. It's exhaustive by construction. A RAG system has three variables: the question (Q), the retrieved context (C), and the generated answer (A). Three variables yield exactly six conditional relationships. Every RAG failure is one of these six breaking.<sup><a href="#fn4">4</a></sup></p>
+            <p>The three primary relationships cover most use cases. <strong>Context Relevance (C|Q)</strong> asks whether the retrieved context actually addresses the question — if retrieval is bad, generation is doomed regardless of how good your model is. <strong>Faithfulness (A|C)</strong> asks whether the answer restricts itself to claims supported by the retrieved context. It is the hallucination check, and the most important relationship for high-stakes domains where making up a citation is worse than refusing. <strong>Answer Relevance (A|Q)</strong> asks whether the answer actually addresses what was asked — the end-to-end user-experience metric.</p>
+            <p>Three advanced relationships support deeper diagnostics. <strong>Context Coverage (C|A)</strong> asks whether the context contains everything needed to support every claim in the answer. <strong>Answerability (Q|C)</strong> asks whether the question is answerable at all given the context — if not, the correct behavior is to refuse rather than improvise. <strong>Self-Containment (Q|A)</strong> asks whether the original question can be inferred from the answer alone — critical for asynchronous contexts where answers get quoted or forwarded.</p>
+            <p>The debugging mental model is immediate. If the answer is wrong, check faithfulness. If it's off-topic, check answer relevance. If it's missing information, check context relevance or coverage. Jason's provocation, worth repeating: <em>if someone sells you a RAG evaluation framework with twenty metrics, ask which of the six conditional relationships each one actually measures.</em></p>
+            <p>Different domains weight these relationships differently. Medical RAG lives or dies on faithfulness. Customer service lives or dies on answer relevance. Technical documentation lives or dies on answerability — knowing when to say "I don't have the information to answer this."</p>
+        </div>
+
+        <aside class="sidebar">
+            <div class="sidebar-label">Sidebar · The Six Relationships</div>
+            <div class="sidebar-title">Every RAG failure is one of these</div>
+            <ul class="sidebar-list">
+                <li><strong>C | Q</strong> Context Relevance — does retrieval find passages that address the question?</li>
+                <li><strong>A | C</strong> Faithfulness — is every claim in the answer supported by context?</li>
+                <li><strong>A | Q</strong> Answer Relevance — does the answer actually address the question?</li>
+                <li><strong>C | A</strong> Coverage — does context contain everything to support the answer?</li>
+                <li><strong>Q | C</strong> Answerability — is the question answerable given this context?</li>
+                <li><strong>Q | A</strong> Self-Containment — can the question be inferred from the answer alone?</li>
+            </ul>
+        </aside>
+
+        <div class="section" id="agents">
+            <span class="section-number">VIII&nbsp;·&nbsp;Agents</span>
+            <h2 class="section-title">Outcomes, not paths</h2>
+            <p>Agents are harder to evaluate than single-turn systems because they operate over many steps, call tools, modify external state, and can "succeed" in unexpected ways — including by exploiting loopholes the eval designer didn't anticipate. Anthropic's essay is the current canonical reference, and its vocabulary is worth adopting wholesale.<sup><a href="#fn3">3</a></sup></p>
+            <p>A <em>task</em> is one test case with inputs and success criteria. A <em>trial</em> is one stochastic run of a task; model outputs vary between runs, so multiple trials smooth the noise. A <em>grader</em> is logic that scores some aspect of the agent's performance; a task can have multiple graders. The <em>transcript</em> is the full record of the trial — tool calls, reasoning, intermediate outputs. The <em>outcome</em> is the final state in the environment, which is <strong>not the same</strong> as the transcript. A flight-booking agent might produce a transcript ending in "Your flight has been booked!" while the outcome is that no reservation exists in the database. Always grade outcomes, not just what the agent claimed to do.</p>
+            <p>Anthropic classifies graders into three types, and effective evals combine all three. <strong>Code-based graders</strong> — regex matches, static analysis, state-check assertions, tool-call verification — are fast, cheap, reproducible, and brittle. They handle anything objectively checkable. <strong>Model-based graders</strong> — LLM rubrics, pairwise comparisons, multi-judge consensus — are flexible, capture nuance, handle open-ended output, and require calibration. Use them for subjective quality or valid variations the code grader can't anticipate. <strong>Human graders</strong> — SME review, inter-annotator agreement, A/B testing — are the gold standard and don't scale. Use them judiciously to calibrate the other two.</p>
+            <p>Capability evals and regression evals play different roles. Capability evals measure what the system can do; they should start with a low pass rate — perhaps 30–40 percent — to give the team a hill to climb. Regression evals stay near 100 percent because they protect against backsliding. As capability evals saturate, they graduate into the regression suite.</p>
+            <p>For stochastic behavior, Anthropic recommends two metrics: <strong>pass@k</strong> and <strong>pass^k</strong>. Pass@k is the probability that at least one of k attempts succeeds; it rises with k, because more shots on goal means higher odds of one working. Use it when a single correct solution is enough (coding, brainstorming, research). Pass^k is the probability that <em>all</em> k attempts succeed; it falls with k, because demanding consistency is a harder bar. Use it for customer-facing agents where users expect reliability every time. At a 75 percent per-trial success rate, pass@10 approaches 100 percent while pass^10 falls below 6 percent. <strong>The same agent looks heroic or broken depending on which metric you chose.</strong><sup><a href="#fn14">14</a></sup></p>
+        </div>
+
+        <aside class="sidebar">
+            <div class="sidebar-label">Sidebar · Reliability Metrics</div>
+            <div class="sidebar-title">pass@k and pass^k at 75% per-trial success</div>
+            <ul class="sidebar-list">
+                <li><strong>k = 1</strong> pass@1 = pass^1 = 75%</li>
+                <li><strong>k = 3</strong> pass@3 ≈ 98%, pass^3 ≈ 42%</li>
+                <li><strong>k = 10</strong> pass@10 ≈ 100%, pass^10 ≈ 5.6%</li>
+            </ul>
+            <p style="margin-top: 16px;">They tell the same story at k=1 and opposite stories by k=10. Pick the metric that matches your product's actual reliability requirement.</p>
+        </aside>
+
+        <div class="section" id="counterpoint">
+            <span class="section-number">IX&nbsp;·&nbsp;A Counterpoint</span>
+            <h2 class="section-title">LLM judges aren't the shortcut you think</h2>
+            <p>Doug Turnbull, writing from a search and relevance-engineering background, pushes back on the LLM-as-judge hype. His argument is worth engaging because the rest of the literature is written mostly from the product-AI perspective and could use the counterweight.<sup><a href="#fn15">15</a></sup></p>
+            <p>LLM judges approximate one specific kind of human evaluation: <em>topical relevance</em>. "Is this document about what the query asked about?" LLMs are excellent at this because they live in a world of facts. But relevance in a real product is driven by user <em>lizard brains</em> — intent, personalization, recency, authority, click-through, conversion. No LLM judge captures those. A search result that's topically relevant but clicks-poorly is a business loss; an LLM judge will happily approve it.</p>
+            <p>Turnbull's alternative framing is useful. Instead of using an LLM as <em>the</em> judge, consider using <strong>LLM features in a smaller scoring model</strong>. Use the LLM's embeddings, structured judgments, or ranked outputs as features in a learned ranker or cross-encoder. You keep the LLM's knowledge and discard its opinions. You avoid most of the position, verbosity, and self-enhancement biases documented in the academic literature. And you retain a learned ranker that can actually optimize for your real-world signals.</p>
+        </div>
+
+        <div class="section" id="edd">
+            <span class="section-number">X&nbsp;·&nbsp;The Operating System</span>
+            <h2 class="section-title">Evaluation-Driven Development</h2>
+            <p>Tying it all together, Bowne-Anderson and Krawczyk frame this as a shift from <em>test-driven</em> to <em>evaluation-driven</em> development. In TDD, tests are binary and deterministic. In EDD, evaluations are probabilistic and calibrated against a human standard. The loop: start with an MVP; generate synthetic queries grounded in user personas and scenarios; hand-label the outputs for twenty to fifty examples (this is not optional — do not jump to LLM-as-judge until you've personally graded at least twenty); build a Minimum Viable Evaluation, a harness with either a golden test set or a simple judge aligned to your labels; evaluate changes — swap a model, tweak a prompt, adjust retrieval — and measure impact; when new failure modes appear in production, re-label those examples and extend the eval.<sup><a href="#fn16">16</a></sup></p>
+            <p>The question EDD is designed to answer is the question teams ask constantly and can't answer without it: <em>"does our app work?"</em> and <em>"can we switch from GPT-4 to Claude?"</em> Both are unanswerable without an eval framework. EDD makes both one-command questions. That is the superpower. Not any specific metric — the shift in what questions become answerable.</p>
+        </div>
+
+        <div class="pullquote">That is the superpower. Not any specific metric — the shift in what questions become answerable.</div>
+
+        <div class="section" id="unified">
+            <span class="section-number">XI&nbsp;·&nbsp;The Unified Model</span>
+            <h2 class="section-title">Ten steps, all eleven sources</h2>
+            <p>If you internalize only one thing from this article, make it the ten-step loop every source in the bibliography collapses to. One: look at your data; categorize real failures. Two: find the domain expert, singular. Three: binary pass/fail with written critiques, not Likert. Four: align a scalable grader — code assertion or calibrated LLM judge. Five: measure precision and recall on held-out data, not accuracy. Six: error-analyze failures by root cause; cluster, count, attack biggest. Seven: for RAG, trace failure to one of six conditional relationships. Eight: for agents, grade outcomes not paths; use pass@k or pass^k as appropriate. Nine: read transcripts weekly. Ten: treat the suite as a living artifact — every bug becomes an eval case, every model release triggers a run.</p>
+            <p>Nothing here is clever. Nothing requires exotic infrastructure. What it requires is discipline and the willingness to spend sixty to eighty percent of project time on a task that feels unglamorous. Looking at your data.<span class="endmark"></span></p>
+        </div>
+
+        <aside class="sidebar">
+            <div class="sidebar-label">Sidebar · Implementation</div>
+            <div class="sidebar-title">A four-week plan to go from zero to trustworthy evals</div>
+            <p><strong>Week 1.</strong> Identify your Principal Domain Expert. Pull 30–50 real production traces. Build a simple web viewer so the expert sees each trace with all context on one screen. Expert marks pass/fail + writes a critique on each. Do not build anything else yet.</p>
+            <p><strong>Week 2.</strong> Review critiques as a team. Cluster failures by root cause. Fix the biggest 2–3 bugs directly (prompt tweaks, retrieval changes, tool-description edits). Track what changed and why.</p>
+            <p><strong>Week 3.</strong> Write an LLM judge prompt with 5–10 critique examples embedded. Run on the same traces. Iterate until agreement exceeds 85% — measured by precision &amp; recall, not accuracy.</p>
+            <p><strong>Week 4.</strong> Run judge on fresh held-out traces. Segment error rates by feature / scenario / persona. Identify next 2–3 improvements. Wire judge into CI so every PR runs it.</p>
+            <p><strong>Ongoing.</strong> Every bug report becomes an eval case. Every model release triggers a run. Every new feature ships with an eval defining what "done" means. Sample and read 10 transcripts per week.</p>
+            <p style="margin-top: 16px; font-size: 14px; color: var(--ink-500);"><em>The one warning every source agrees on: do not optimize for high pass rates. 100% means your eval isn't working. Add harder tasks.</em></p>
+        </aside>
+
+    </article>
+
+    <!-- FURTHER READING -->
+    <section class="further-reading">
+        <h3>Further Reading · The Eleven Sources</h3>
+        <ul class="reading-list">
+            <li><a href="https://hamel.dev/blog/posts/llm-judge/" target="_blank"><span class="author">Hamel Husain</span><span class="title">Using LLM-as-a-Judge For Evaluation: A Complete Guide</span></a></li>
+            <li><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank"><span class="author">Anthropic</span><span class="title">Demystifying Evals for AI Agents</span></a></li>
+            <li><a href="https://jxnl.co/writing/2025/05/19/there-are-only-6-rag-evals/" target="_blank"><span class="author">Jason Liu</span><span class="title">There Are Only 6 RAG Evals</span></a></li>
+            <li><a href="https://eugeneyan.com/writing/llm-evaluators/" target="_blank"><span class="author">Eugene Yan</span><span class="title">Evaluating the Effectiveness of LLM-Evaluators (aka LLM-as-Judge)</span></a></li>
+            <li><a href="https://www.decodingai.com/p/escaping-poc-purgatory-evaluation" target="_blank"><span class="author">Hugo Bowne-Anderson &amp; Stefan Krawczyk</span><span class="title">Escaping POC Purgatory: Evaluation-Driven Development for AI Systems</span></a></li>
+            <li><a href="https://www.decodingai.com/p/stop-launching-ai-apps-without-this" target="_blank"><span class="author">Hugo Bowne-Anderson</span><span class="title">Stop Launching AI Apps Without This Framework</span></a></li>
+            <li><a href="https://www.decodingai.com/p/the-5-star-lie-you-are-doing-ai-evals" target="_blank"><span class="author">Aishwarya Naresh Reganti</span><span class="title">The 5-Star Lie You Are Doing AI Evals</span></a></li>
+            <li><a href="https://www.decodingai.com/p/the-mirage-of-generic-ai-metrics" target="_blank"><span class="author">Aishwarya Naresh Reganti</span><span class="title">The Mirage of Generic AI Metrics</span></a></li>
+            <li><a href="https://www.youtube.com/watch?v=e2i6JbU2R-s" target="_blank"><span class="author">Andrew Ng</span><span class="title">Carrying Out Error Analysis</span></a></li>
+            <li><a href="https://decodingai.com/t/ai-evals-and-observability" target="_blank"><span class="author">Decoding AI Series</span><span class="title">AI Evals &amp; Observability</span></a></li>
+            <li><a href="https://www.youtube.com/watch?v=sEMYSSS6Ims" target="_blank"><span class="author">Doug Turnbull (adj.)</span><span class="title">LLM Judges Aren't the Shortcut You Think</span></a></li>
+        </ul>
+    </section>
+
+    <!-- FOOTNOTES -->
+    <section class="footnotes">
+        <h3>Footnotes</h3>
+        <ol>
+            <li id="fn1">Synthesis across all eleven sources in the bibliography. Thesis framing most directly from Hamel Husain, <em>Using LLM-as-a-Judge For Evaluation</em> (2024) and <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Anthropic, <em>Demystifying Evals for AI Agents</em></a> (2026).</li>
+            <li id="fn2"><a href="https://hamel.dev/blog/posts/llm-judge/" target="_blank">Hamel Husain, <em>Using LLM-as-a-Judge For Evaluation: A Complete Guide</em></a> (hamel.dev, October 2024).</li>
+            <li id="fn3"><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Anthropic, <em>Demystifying Evals for AI Agents</em></a> (anthropic.com/engineering, January 2026). Written by Mikaela Grace, Jeremy Hadfield, Rodrigo Olivares, and Jiri De Jonghe.</li>
+            <li id="fn4"><a href="https://jxnl.co/writing/2025/05/19/there-are-only-6-rag-evals/" target="_blank">Jason Liu, <em>There Are Only 6 RAG Evals</em></a> (jxnl.co, May 2025).</li>
+            <li id="fn5"><a href="https://www.decodingai.com/p/escaping-poc-purgatory-evaluation" target="_blank">Hugo Bowne-Anderson &amp; Stefan Krawczyk, <em>Escaping POC Purgatory: Evaluation-Driven Development for AI Systems</em></a> (Decoding AI, 2025).</li>
+            <li id="fn6"><a href="https://www.youtube.com/watch?v=e2i6JbU2R-s" target="_blank">Andrew Ng, <em>Carrying Out Error Analysis</em></a> (deeplearning.ai, YouTube). The canonical treatment of this technique.</li>
+            <li id="fn7"><a href="https://hamel.dev/blog/posts/evals-faq/" target="_blank">Hamel Husain, <em>LLM Evals: Everything You Need to Know</em></a> (hamel.dev). Source for the 60–80 percent budget claim, based on 30+ production implementations.</li>
+            <li id="fn8"><a href="https://hamel.dev/blog/posts/revenge/" target="_blank">Hamel Husain, <em>The Revenge of the Data Scientist</em></a> (hamel.dev). On classical data-science skills as the rate-limiter for LLM teams. Data-literacy taxonomy adapted from <a href="https://jxnl.co/writing/2024/06/02/10-ways-to-be-data-illiterate-and-how-to-avoid-them/" target="_blank">Jason Liu &amp; Eugene Yan, <em>10 Ways to Be Data Illiterate</em></a>.</li>
+            <li id="fn9"><a href="https://arxiv.org/abs/2404.12272" target="_blank">Shreya Shankar, J.D. Zamfirescu-Pereira, Björn Hartmann, Aditya G. Parameswaran, Ian Arawjo, <em>Who Validates the Validators? Aligning LLM-Assisted Evaluation of LLM Outputs with Human Preferences</em></a> (arXiv:2404.12272, 2024).</li>
+            <li id="fn10"><a href="https://www.decodingai.com/p/the-5-star-lie-you-are-doing-ai-evals" target="_blank">Aishwarya Naresh Reganti, <em>The 5-Star Lie You Are Doing AI Evals</em></a> (Decoding AI).</li>
+            <li id="fn11"><a href="https://arxiv.org/abs/2306.05685" target="_blank">Lianmin Zheng et al., <em>Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena</em></a> (arXiv:2306.05685). The canonical reference for position, verbosity, and self-enhancement bias in LLM judges.</li>
+            <li id="fn12"><a href="https://eugeneyan.com/writing/llm-evaluators/" target="_blank">Eugene Yan, <em>Evaluating the Effectiveness of LLM-Evaluators (aka LLM-as-Judge)</em></a> (eugeneyan.com, August 2024). Synthesis of 24+ papers on LLM-as-judge. Correlation numbers reference benchmarks from <a href="https://arxiv.org/abs/2304.02554" target="_blank">Gao et al.</a> and <a href="https://arxiv.org/abs/2303.15621" target="_blank">Luo et al.</a>; 70% rule from <a href="https://hamel.dev/blog/posts/evals-faq/" target="_blank">Hamel Husain's evals FAQ</a>.</li>
+            <li id="fn13"><a href="https://arxiv.org/abs/2404.18796" target="_blank">Pat Verga et al., <em>Replacing Judges with Juries: Evaluating LLM Generations with a Panel of Diverse Models</em></a> (arXiv:2404.18796, Cohere, 2024).</li>
+            <li id="fn14">pass@k introduced in <a href="https://arxiv.org/abs/2107.03374" target="_blank">Chen et al., <em>Evaluating Large Language Models Trained on Code</em></a> (arXiv:2107.03374, Codex paper, 2021). pass^k introduced in <a href="https://arxiv.org/abs/2406.12045" target="_blank">Yao et al., <em>τ-Bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains</em></a> (arXiv:2406.12045, 2024). Framing in Anthropic's agent evals piece.</li>
+            <li id="fn15"><a href="https://softwaredoug.com/blog/2025/11/02/llm-judges-arent-the-shortcut-you-think" target="_blank">Doug Turnbull, <em>LLM Judges Aren't the Shortcut You Think</em></a> (softwaredoug.com, November 2025). The YouTube talk in the original bibliography may be a different speaker (possibly <a href="https://www.sh-reya.com/" target="_blank">Shreya Shankar</a>) covering adjacent ground; treatment here is based on Turnbull's post.</li>
+            <li id="fn16"><a href="https://www.decodingai.com/p/stop-launching-ai-apps-without-this" target="_blank">Hugo Bowne-Anderson, <em>Stop Launching AI Apps Without This Framework</em></a> (Decoding AI, 2025). The Minimum Viable Evaluation concept. See also the "eval-driven development" framing adopted in <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Anthropic's agents piece</a>.</li>
+        </ol>
+    </section>
+
+    <!-- COLOPHON -->
+    <footer class="colophon">
+        <div>Osmosis Engineering Review · Issue 01 · April 2026</div>
+        <div style="margin-top: 8px;"><a href="index.html">← Return to Engineering Library</a></div>
+    </footer>
+
+</body>
+</html>
