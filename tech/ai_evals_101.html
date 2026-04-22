@@ -531,6 +531,30 @@
             text-decoration: underline;
         }
 
+        .slide-sources em a {
+            color: var(--ink-700);
+            text-decoration: underline;
+            text-decoration-color: var(--border-100);
+            text-underline-offset: 2px;
+        }
+
+        .slide-sources em a:hover {
+            color: var(--color-accent);
+            text-decoration-color: var(--color-accent);
+        }
+
+        .slide-sources a {
+            color: var(--ink-500);
+            text-decoration: underline;
+            text-decoration-color: var(--border-100);
+            text-underline-offset: 2px;
+        }
+
+        .slide-sources a:hover {
+            color: var(--color-accent);
+            text-decoration-color: var(--color-accent);
+        }
+
         .slide-sources {
             font-family: var(--font-mono);
             font-size: 11px;
@@ -599,7 +623,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    Synthesis across all 11 bibliography entries. Thesis framing most directly from <em>Hamel Husain</em>, "Using LLM-as-a-Judge For Evaluation" (2024) and <em>Anthropic</em>, "Demystifying Evals for AI Agents" (2026).
+                    Synthesis across all 11 bibliography entries. Thesis framing most directly from <em><a href="https://hamel.dev/blog/posts/llm-judge/" target="_blank">Hamel Husain</a></em>, "Using LLM-as-a-Judge For Evaluation" (2024) and <em><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Anthropic</a></em>, "Demystifying Evals for AI Agents" (2026).
                 </div>
             </div>
         </div>
@@ -630,7 +654,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    <em>Hamel Husain</em>, "LLM Evals: Everything You Need to Know" (for the 60–80% error-analysis budget claim). <em>Anthropic</em>, "Demystifying Evals for AI Agents" (spec ambiguity; days-not-weeks model upgrades). <em>Hugo Bowne-Anderson &amp; Stefan Krawczyk</em>, "Escaping POC Purgatory" (evals as product-research interface).
+                    <em><a href="https://hamel.dev/blog/posts/evals-faq/" target="_blank">Hamel Husain</a></em>, "LLM Evals: Everything You Need to Know" (for the 60–80% error-analysis budget claim). <em><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Anthropic</a></em>, "Demystifying Evals for AI Agents" (spec ambiguity; days-not-weeks model upgrades). <em><a href="https://www.decodingai.com/p/escaping-poc-purgatory-evaluation" target="_blank">Hugo Bowne-Anderson &amp; Stefan Krawczyk</a></em>, "Escaping POC Purgatory" (evals as product-research interface).
                 </div>
             </div>
         </div>
@@ -694,7 +718,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    "Reactive loop" framing from <em>Anthropic</em>, "Demystifying Evals for AI Agents." "POC purgatory" coined in <em>Hugo Bowne-Anderson &amp; Stefan Krawczyk</em>, "Escaping POC Purgatory: Evaluation-Driven Development for AI Systems" (Decoding AI).
+                    "Reactive loop" framing from <em><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Anthropic</a></em>, "Demystifying Evals for AI Agents." "POC purgatory" coined in <em><a href="https://www.decodingai.com/p/escaping-poc-purgatory-evaluation" target="_blank">Hugo Bowne-Anderson &amp; Stefan Krawczyk</a></em>, "Escaping POC Purgatory: Evaluation-Driven Development for AI Systems" (Decoding AI).
                 </div>
             </div>
         </div>
@@ -767,7 +791,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    <em>Andrew Ng</em>, "Carrying Out Error Analysis" (YouTube, deeplearning.ai). <em>Hamel Husain</em>, "Using LLM-as-a-Judge For Evaluation" and "The Revenge of the Data Scientist" (60–80% budget claim; data-literacy argument). Data-literacy taxonomy adapted from <em>Jason Liu &amp; Eugene Yan</em>, "10 Ways to Be Data Illiterate."
+                    <em><a href="https://www.youtube.com/watch?v=e2i6JbU2R-s" target="_blank">Andrew Ng</a></em>, "Carrying Out Error Analysis" (YouTube, deeplearning.ai). <em><a href="https://hamel.dev/blog/posts/llm-judge/" target="_blank">Hamel Husain</a></em>, "Using LLM-as-a-Judge For Evaluation" and "<a href="https://hamel.dev/blog/posts/revenge/" target="_blank">The Revenge of the Data Scientist</a>" (60–80% budget claim; data-literacy argument). Data-literacy taxonomy adapted from <em><a href="https://jxnl.co/writing/2024/06/02/10-ways-to-be-data-illiterate-and-how-to-avoid-them/" target="_blank">Jason Liu &amp; Eugene Yan</a></em>, "10 Ways to Be Data Illiterate."
                 </div>
             </div>
         </div>
@@ -810,7 +834,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Source</span>
-                    Entire methodology from <em>Hamel Husain</em>, "Using LLM-as-a-Judge For Evaluation: A Complete Guide" (hamel.dev, Oct 2024). Features × Scenarios × Personas taxonomy and the "30+ examples, stop when failure modes stabilize" heuristic come from the same post.
+                    Entire methodology from <em><a href="https://hamel.dev/blog/posts/llm-judge/" target="_blank">Hamel Husain</a></em>, "Using LLM-as-a-Judge For Evaluation: A Complete Guide" (hamel.dev, Oct 2024). Features × Scenarios × Personas taxonomy and the "30+ examples, stop when failure modes stabilize" heuristic come from the same post.
                 </div>
             </div>
         </div>
@@ -849,7 +873,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    "Criteria drift" concept from <em>Shreya Shankar, J.D. Zamfirescu-Pereira, Björn Hartmann, Aditya G. Parameswaran, Ian Arawjo</em>, "Who Validates the Validators? Aligning LLM-Assisted Evaluation of LLM Outputs with Human Preferences" (arXiv:2404.12272, 2024). Honeycomb case study from <em>Hamel Husain</em>'s "Using LLM-as-a-Judge" post, with domain expert Phillip Carter.
+                    "Criteria drift" concept from <em><a href="https://arxiv.org/abs/2404.12272" target="_blank">Shreya Shankar, J.D. Zamfirescu-Pereira, Björn Hartmann, Aditya G. Parameswaran, Ian Arawjo</a></em>, "Who Validates the Validators? Aligning LLM-Assisted Evaluation of LLM Outputs with Human Preferences" (arXiv:2404.12272, 2024). Honeycomb case study from <em><a href="https://hamel.dev/blog/posts/llm-judge/" target="_blank">Hamel Husain</a></em>'s "Using LLM-as-a-Judge" post, with domain expert Phillip Carter.
                 </div>
             </div>
         </div>
@@ -892,7 +916,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    <em>Aishwarya Naresh Reganti</em>, "The 5-Star Lie You Are Doing AI Evals" (Decoding AI). <em>Hamel Husain</em>, "Using LLM-as-a-Judge" (binary-is-better argument). Bias literature from <em>Lianmin Zheng et al.</em>, "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena" (arXiv:2306.05685) — position, verbosity, and self-enhancement bias — as surveyed by <em>Eugene Yan</em>, "Evaluating the Effectiveness of LLM-Evaluators."
+                    <em><a href="https://www.decodingai.com/p/the-5-star-lie-you-are-doing-ai-evals" target="_blank">Aishwarya Naresh Reganti</a></em>, "The 5-Star Lie You Are Doing AI Evals" (Decoding AI). <em><a href="https://hamel.dev/blog/posts/llm-judge/" target="_blank">Hamel Husain</a></em>, "Using LLM-as-a-Judge" (binary-is-better argument). Bias literature from <em><a href="https://arxiv.org/abs/2306.05685" target="_blank">Lianmin Zheng et al.</a></em>, "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena" (arXiv:2306.05685) — position, verbosity, and self-enhancement bias — as surveyed by <em><a href="https://eugeneyan.com/writing/llm-evaluators/" target="_blank">Eugene Yan</a></em>, "Evaluating the Effectiveness of LLM-Evaluators."
                 </div>
             </div>
         </div>
@@ -934,7 +958,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    <em>Aishwarya Naresh Reganti</em>, "The Mirage of Generic AI Metrics" (Decoding AI). Correlation numbers from <em>Eugene Yan</em>, "Evaluating the Effectiveness of LLM-Evaluators" (synthesizing SummEval and related benchmarks from <em>Gao et al.</em> arXiv:2304.02554 and <em>Luo et al.</em> arXiv:2303.15621). 70% rule from <em>Hamel Husain</em>, "LLM Evals: Everything You Need to Know" (evals-faq).
+                    <em><a href="https://www.decodingai.com/p/the-mirage-of-generic-ai-metrics" target="_blank">Aishwarya Naresh Reganti</a></em>, "The Mirage of Generic AI Metrics" (Decoding AI). Correlation numbers from <em><a href="https://eugeneyan.com/writing/llm-evaluators/" target="_blank">Eugene Yan</a></em>, "Evaluating the Effectiveness of LLM-Evaluators" (synthesizing SummEval and related benchmarks from <em><a href="https://arxiv.org/abs/2304.02554" target="_blank">Gao et al.</a></em> arXiv:2304.02554 and <em><a href="https://arxiv.org/abs/2303.15621" target="_blank">Luo et al.</a></em> arXiv:2303.15621). 70% rule from <em><a href="https://hamel.dev/blog/posts/evals-faq/" target="_blank">Hamel Husain</a></em>, "LLM Evals: Everything You Need to Know" (evals-faq).
                 </div>
             </div>
         </div>
@@ -968,7 +992,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    Entire decision tree from <em>Eugene Yan</em>, "Evaluating the Effectiveness of LLM-Evaluators (aka LLM-as-Judge)" (eugeneyan.com, Aug 2024) — a synthesis of 24+ papers. PoLL (Panel of LLMs) approach from <em>Pat Verga et al.</em>, "Replacing Judges with Juries: Evaluating LLM Generations with a Panel of Diverse Models" (arXiv:2404.18796).
+                    Entire decision tree from <em><a href="https://eugeneyan.com/writing/llm-evaluators/" target="_blank">Eugene Yan</a></em>, "Evaluating the Effectiveness of LLM-Evaluators (aka LLM-as-Judge)" (eugeneyan.com, Aug 2024) — a synthesis of 24+ papers. PoLL (Panel of LLMs) approach from <em><a href="https://arxiv.org/abs/2404.18796" target="_blank">Pat Verga et al.</a></em>, "Replacing Judges with Juries: Evaluating LLM Generations with a Panel of Diverse Models" (arXiv:2404.18796).
                 </div>
             </div>
         </div>
@@ -1021,7 +1045,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Source</span>
-                    Entire framework from <em>Jason Liu</em>, "There Are Only 6 RAG Evals" (jxnl.co, May 2025). Domain-emphasis guidance (medical vs. customer service vs. technical docs) from the same post.
+                    Entire framework from <em><a href="https://jxnl.co/writing/2025/05/19/there-are-only-6-rag-evals/" target="_blank">Jason Liu</a></em>, "There Are Only 6 RAG Evals" (jxnl.co, May 2025). Domain-emphasis guidance (medical vs. customer service vs. technical docs) from the same post.
                 </div>
             </div>
         </div>
@@ -1053,7 +1077,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Source</span>
-                    Entire vocabulary from <em>Anthropic</em>, "Demystifying Evals for AI Agents" (anthropic.com/engineering, Jan 2026), by Mikaela Grace, Jeremy Hadfield, Rodrigo Olivares, and Jiri De Jonghe. Flight-booking example from the same post, referencing <em>τ²-Bench</em> (<em>Yao et al.</em>, arXiv:2506.07982).
+                    Entire vocabulary from <em><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Anthropic</a></em>, "Demystifying Evals for AI Agents" (anthropic.com/engineering, Jan 2026), by Mikaela Grace, Jeremy Hadfield, Rodrigo Olivares, and Jiri De Jonghe. Flight-booking example from the same post, referencing <em><a href="https://arxiv.org/abs/2506.07982" target="_blank">τ²-Bench</a></em> (<em>Yao et al.</em>, arXiv:2506.07982).
                 </div>
             </div>
         </div>
@@ -1093,7 +1117,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Source</span>
-                    Grader taxonomy and capability/regression distinction from <em>Anthropic</em>, "Demystifying Evals for AI Agents." Underlying benchmarks referenced: <em>SWE-bench Verified</em>, <em>Terminal-Bench</em>, <em>τ-Bench</em> (<em>Yao et al.</em>, arXiv:2406.12045).
+                    Grader taxonomy and capability/regression distinction from <em><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Anthropic</a></em>, "Demystifying Evals for AI Agents." Underlying benchmarks referenced: <em><a href="https://www.swebench.com/SWE-bench/" target="_blank">SWE-bench Verified</a></em>, <em><a href="https://www.tbench.ai/" target="_blank">Terminal-Bench</a></em>, <em><a href="https://arxiv.org/abs/2406.12045" target="_blank">τ-Bench</a></em> (<em>Yao et al.</em>, arXiv:2406.12045).
                 </div>
             </div>
         </div>
@@ -1129,7 +1153,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    Framing from <em>Anthropic</em>, "Demystifying Evals for AI Agents." <em>pass@k</em> introduced in <em>Chen et al.</em>, "Evaluating Large Language Models Trained on Code" (arXiv:2107.03374, Codex paper, 2021). <em>pass^k</em> introduced in <em>Yao et al.</em>, "τ-Bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains" (arXiv:2406.12045, 2024).
+                    Framing from <em><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Anthropic</a></em>, "Demystifying Evals for AI Agents." <em>pass@k</em> introduced in <em><a href="https://arxiv.org/abs/2107.03374" target="_blank">Chen et al.</a></em>, "Evaluating Large Language Models Trained on Code" (arXiv:2107.03374, Codex paper, 2021). <em>pass^k</em> introduced in <em><a href="https://arxiv.org/abs/2406.12045" target="_blank">Yao et al.</a></em>, "τ-Bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains" (arXiv:2406.12045, 2024).
                 </div>
             </div>
         </div>
@@ -1167,7 +1191,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    <em>Doug Turnbull</em>, "LLM Judges Aren't the Shortcut You Think" (softwaredoug.com, Nov 2025). Self-enhancement and verbosity bias evidence from <em>Lianmin Zheng et al.</em>, "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena" (arXiv:2306.05685). The YouTube talk linked in the original bibliography may be a different speaker (possibly <em>Shreya Shankar</em>) covering adjacent ground — treatment here is based on the blog post of the same title.
+                    <em><a href="https://softwaredoug.com/blog/2025/11/02/llm-judges-arent-the-shortcut-you-think" target="_blank">Doug Turnbull</a></em>, "LLM Judges Aren't the Shortcut You Think" (softwaredoug.com, Nov 2025). Self-enhancement and verbosity bias evidence from <em><a href="https://arxiv.org/abs/2306.05685" target="_blank">Lianmin Zheng et al.</a></em>, "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena" (arXiv:2306.05685). The YouTube talk linked in the original bibliography may be a different speaker (possibly <em><a href="https://www.sh-reya.com/" target="_blank">Shreya Shankar</a></em>) covering adjacent ground — treatment here is based on the blog post of the same title.
                 </div>
             </div>
         </div>
@@ -1222,7 +1246,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    <em>Hugo Bowne-Anderson &amp; Stefan Krawczyk</em>, "Escaping POC Purgatory: Evaluation-Driven Development for AI Systems" and "Stop Launching AI Apps Without This Framework" (both Decoding AI, 2025). "Eval-driven development" as a term also adopted in <em>Anthropic</em>, "Demystifying Evals for AI Agents."
+                    <em><a href="https://www.decodingai.com/p/escaping-poc-purgatory-evaluation" target="_blank">Hugo Bowne-Anderson &amp; Stefan Krawczyk</a></em>, "Escaping POC Purgatory: Evaluation-Driven Development for AI Systems" and "<a href="https://www.decodingai.com/p/stop-launching-ai-apps-without-this" target="_blank">Stop Launching AI Apps Without This Framework</a>" (both Decoding AI, 2025). "Eval-driven development" as a term also adopted in <em><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Anthropic</a></em>, "Demystifying Evals for AI Agents."
                 </div>
             </div>
         </div>
@@ -1289,7 +1313,7 @@
                 </div>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    Starting plan primarily adapted from <em>Hamel Husain</em>'s "Critique Shadowing" methodology. CI integration and "eval tasks as PRs" pattern from <em>Anthropic</em>, "Demystifying Evals for AI Agents." MVE (Minimum Viable Evaluation) framing from <em>Hugo Bowne-Anderson &amp; Stefan Krawczyk</em>.
+                    Starting plan primarily adapted from <em><a href="https://hamel.dev/blog/posts/llm-judge/" target="_blank">Hamel Husain</a></em>'s "Critique Shadowing" methodology. CI integration and "eval tasks as PRs" pattern from <em><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Anthropic</a></em>, "Demystifying Evals for AI Agents." MVE (Minimum Viable Evaluation) framing from <em><a href="https://www.decodingai.com/p/stop-launching-ai-apps-without-this" target="_blank">Hugo Bowne-Anderson &amp; Stefan Krawczyk</a></em>.
                 </div>
             </div>
         </div>
@@ -1323,7 +1347,7 @@
                 </table>
                 <div class="slide-sources">
                     <span class="sources-label">Sources</span>
-                    Compiled from the full bibliography. Key underlying papers: <em>Shankar et al.</em> (arXiv:2404.12272) for criteria drift; <em>Verga et al.</em> (arXiv:2404.18796) for PoLL; <em>Chen et al.</em> (arXiv:2107.03374) for pass@k; <em>Yao et al.</em> (arXiv:2406.12045) for pass^k; <em>Zheng et al.</em> (arXiv:2306.05685) for LLM-as-judge biases.
+                    Compiled from the full bibliography. Key underlying papers: <em><a href="https://arxiv.org/abs/2404.12272" target="_blank">Shankar et al.</a></em> (arXiv:2404.12272) for criteria drift; <em><a href="https://arxiv.org/abs/2404.18796" target="_blank">Verga et al.</a></em> (arXiv:2404.18796) for PoLL; <em><a href="https://arxiv.org/abs/2107.03374" target="_blank">Chen et al.</a></em> (arXiv:2107.03374) for pass@k; <em><a href="https://arxiv.org/abs/2406.12045" target="_blank">Yao et al.</a></em> (arXiv:2406.12045) for pass^k; <em><a href="https://arxiv.org/abs/2306.05685" target="_blank">Zheng et al.</a></em> (arXiv:2306.05685) for LLM-as-judge biases.
                 </div>
             </div>
         </div>
