@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Osmosis Engineering Library</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Sans+Condensed:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --radius: 10px;
+            --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+            --font-mono: "IBM Plex Mono", monospace;
+            --font-heading: "IBM Plex Sans Condensed", system-ui, sans-serif;
+            --color-primary: #0a0a0a;
+            --color-secondary: rgb(248, 97, 60);
+            --color-accent: rgb(42, 96, 248);
+            --color-background: #f6f7fb;
+            --ink-900: #0F1226;
+            --ink-700: #30364D;
+            --ink-500: #5A6178;
+            --border-100: #ECEFF3;
+            --shadow-elev-2: 0 1px 3px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--color-background);
+            color: var(--ink-900);
+            line-height: 1.6;
+            padding: 60px 24px 80px;
+        }
+
+        .page { max-width: 1200px; margin: 0 auto; }
+
+        .pill {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--color-secondary);
+            border: 1px solid var(--color-secondary);
+            border-radius: 999px;
+            padding: 6px 12px;
+            margin-bottom: 20px;
+            background: #fff;
+        }
+
+        h1 {
+            font-family: var(--font-heading);
+            font-weight: 300;
+            font-size: 58px;
+            letter-spacing: -0.04em;
+            margin-bottom: 16px;
+            color: var(--ink-900);
+        }
+
+        h1 span { color: var(--color-accent); font-weight: 600; }
+
+        .lede {
+            font-size: 20px;
+            color: var(--ink-700);
+            max-width: 840px;
+            margin-bottom: 12px;
+        }
+
+        .back-link {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--ink-500);
+            text-decoration: none;
+            margin-bottom: 40px;
+            letter-spacing: 0.03em;
+        }
+
+        .back-link:hover { color: var(--color-accent); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--border-100);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: var(--shadow-elev-2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        .card a { text-decoration: none; color: var(--ink-900); }
+
+        .card h3 {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .card p { color: var(--ink-700); font-size: 15px; }
+
+        .tag {
+            display: inline-block;
+            background: #EEF2FF;
+            color: var(--color-accent);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            margin-bottom: 12px;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border-100);
+            margin: 48px 0 36px;
+        }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--ink-500);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="pill">Osmosis Engineering Library</div>
+        <h1>Engineering <span>Library</span></h1>
+        <p class="lede">Team-facing primers and reference documents. Not linked from the main sales library.</p>
+        <a class="back-link" href="../index.html">← Back to sales library</a>
+
+        <div class="section-label">Engineering & AI</div>
+        <div class="grid">
+            <div class="card">
+                <a href="ai_evals_101.html">
+                    <div class="tag">Engineering</div>
+                    <h3>AI Evals 101</h3>
+                    <p>How to actually measure AI systems — Hamel Husain, Anthropic, Jason Liu, Eugene Yan, Andrew Ng, and more collapsed into one 21-slide curriculum with citations.</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
